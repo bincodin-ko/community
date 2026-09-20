@@ -1,0 +1,99 @@
+// 온다(ONDA) — 데이터 모델
+// 원칙: 실명·이메일·전화번호·사진을 저장하지 않는다. 출생연도는 나이 사칭 방지용으로 가입 시 고정된다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Postgres 이관 시 "postgresql"로 변경
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nickname     String   @unique
+  passwordHash String
+  birthYear    Int
+  role         String   @default("member") // member | moderator | admin
+  status       String   @default("active") // active | suspended | deleted
+  createdAt    DateTime @default(now())
+
+  posts     Post[]
+  comments  Comment[]
+  reactions Reaction[]
+  reports   Report[]
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  topic       String   // lib/topics.ts 참조
+  title       String
+  body        String
+  anonymous   Boolean  @default(false)
+  hidden      Boolean  @default(false)
+  reportCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  comments  Comment[]
+  reactions Reaction[]
+  reports   Report[]
+
+  @@index([topic, createdAt])
+  @@index([hidden, createdAt])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  body        String
+  anonymous   Boolean  @default(false)
+  hidden      Boolean  @default(false)
+  reportCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  reports Report[]
+
+  @@index([postId, createdAt])
+}
+
+// "나도" — 공감. 좋아요 수 경쟁이 아니라 "나도 그랬다"의 확인.
+model Reaction {
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id])
+  postId     String?
+  post       Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentId  String?
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reason     String   // outing | hate | sexual | spam | other
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@unique([reporterId, postId])
+  @@unique([reporterId, commentId])
+}
+
+// 오늘의 마인드셋 — 하루 한 문장 + 질문
+model Mindset {
+  id       String @id @default(cuid())
+  date     String @unique // YYYY-MM-DD
+  quote    String
+  question String
+  source   String? // 출처/영감 (예: Cade Bradley)
+}

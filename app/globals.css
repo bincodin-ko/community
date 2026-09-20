@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* ---- 토큰: 새벽 안개 위의 잉크. 만남 앱의 검정+네온을 피하고, 읽는 방의 조도로. ---- */
+:root {
+  --fog: #eef1f6;
+  --paper: #ffffff;
+  --ink: #1c2333;
+  --mute: #5c6478;
+  --line: #d9dee8;
+  --teal: #2f6f6d;
+  --teal-deep: #245957;
+  --amber: #f2b84b;
+  --amber-soft: #fbebc6;
+  --rose: #b84a5c;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fog: #14181f;
+    --paper: #1c222b;
+    --ink: #e9ecf2;
+    --mute: #9aa3b5;
+    --line: #2b3340;
+    --teal: #6fb3b0;
+    --teal-deep: #8fcac7;
+    --amber: #e7b457;
+    --amber-soft: #3a3120;
+    --rose: #e08194;
+  }
+}
+:root[data-theme="dark"] {
+  --fog: #14181f;
+  --paper: #1c222b;
+  --ink: #e9ecf2;
+  --mute: #9aa3b5;
+  --line: #2b3340;
+  --teal: #6fb3b0;
+  --teal-deep: #8fcac7;
+  --amber: #e7b457;
+  --amber-soft: #3a3120;
+  --rose: #e08194;
+}
+
+@theme inline {
+  --color-fog: var(--fog);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-rose: var(--rose);
+  --font-serif: "Gowun Batang", "Noto Serif KR", "Apple SD Gothic Neo", serif;
+  --font-sans: "IBM Plex Sans KR", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+html {
+  background: var(--fog);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+body {
+  background: var(--fog);
+  color: var(--ink);
+  min-height: 100dvh;
+  line-height: 1.65;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+/* 본문 글: 줄 길이 제한, 단락 여백 */
+.prose-onda {
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  max-width: 38rem;
+  white-space: pre-wrap;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* 폼 요소 기본 */
+.field {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 1rem;
+}
+.field::placeholder {
+  color: var(--mute);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.btn-primary {
+  background: var(--teal);
+  color: var(--paper);
+}
+.btn-primary:hover {
+  background: var(--teal-deep);
+}
+.btn-quiet {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn-quiet:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
