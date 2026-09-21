@@ -88,10 +88,18 @@ Jev 단독으로는 안 된다. Jev는 **판정기**이고, 찾기(탐색)·고�
 | `public-browser`, KofanLabs `jev-browser-chrome` | Claude Code/Cursor가 내 크롬 프로필을 조작 | 토큰 30%↓, 비용 25%↓ |
 | Stagehand + Jev | 접근성 트리를 state로 | 1과제 약 $0.001 |
 
+**이 레포에서 실제로 돌린 결과 (2026-09-21)**: `npm run browse -- "가족 주제의 이야기 목록을 연다"` 로 네 개 목표를 시험했고
+모두 2회의 Jev 호출, 약 1.3초 만에 정확한 페이지(`/t/family`, `/guide`, `/mindset`, `/t/military`)에 도달했다.
+이 과정에서 **우리 앱의 실제 결함 두 개**를 찾았다. (1) 주제 탭의 `title` 속성이 접근성 이름을 가로채, 보조기술과 에이전트가
+"마음" 대신 "수치심, 자기수용, 불안, 외로움"으로 읽고 있었다. (2) 주제 필터가 `/?topic=` 이라 화면 제목이 항상 "온다"였다.
+둘 다 고쳐서 이제 주제 탭은 제목이 있는 `/t/<주제>` 아카이브로 간다. 판정기를 붙이면 UI 결함이 드러난다는 것이 이 도구의 값이다.
+
 **실행 전제 (이 레포에서 확인한 것)**: `.mcp.json` 에 `jev-browser` 를 등록해 두었지만 실제로 돌리려면 두 가지가 필요하다.
 (1) `TYPESAFE_API_KEY` — 없으면 `jev_provider: null` 로 바로 실패한다. (2) 그 패키지가 기대하는 버전의 Playwright Chromium —
 `npx playwright install chromium` 을 MCP 서버가 쓰는 환경에서 한 번 실행해야 한다. 기존에 다른 버전이 깔려 있으면
-`Executable doesn't exist at .../chromium_headless_shell-XXXX` 로 실패한다. 이 두 가지가 없는 환경에서는
+`Executable doesn't exist at .../chromium_headless_shell-XXXX` 로 실패한다. 이미 다른 빌드가 있다면
+`PLAYWRIGHT_BROWSERS_PATH` 를 별도 디렉터리로 두고 기대 버전 이름으로 심볼릭 링크를 걸어도 된다
+(헤드리스 셸 바이너리는 몇 버전 차이에서 호환됐다). 이 두 가지가 없는 환경에서는
 `npm run qa`(우리 워크)가 대체재다 — 같은 결정 루프를 우리가 직접 돌린다.
 | WebMCP 벤치 | Jev + 소형 LLM이 49/49 과제 해결, 프론티어 모델 대비 비용 약 1/112 | 벤치 저자 보고 |
 

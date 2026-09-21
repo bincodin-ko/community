@@ -19,7 +19,49 @@ function text(state) {
     .join("\n");
 }
 
+// 한국어 2글자 이상 토큰 (조사를 대충 떼기 위해 끝 1글자를 잘라본 형태도 함께 본다)
+function tokens(text) {
+  const out = new Set();
+  for (const m of String(text ?? "").matchAll(/[가-힣]{2,}|[a-zA-Z]{3,}/g)) {
+    const t = m[0];
+    out.add(t);
+    if (t.length > 2) out.add(t.slice(0, -1));
+  }
+  return [...out];
+}
+
+// jev-browser(@jkudish/jev-browser) 의 액션 공간: click_eN / search_eN / type_eN / submit_eN / scroll / back / done
+function answerBrowserAction(q, state) {
+  const opts = Object.keys(q.criteria ?? {});
+  const taskTokens = tokens(state?.task);
+  const visited = new Set((state?.history ?? []).map((h) => String(h?.url ?? h)));
+  let best = opts[0];
+  let bestScore = -1;
+  for (const o of opts) {
+    if (o === "done" || o === "back" || o === "scroll") continue;
+    const desc = String(q.criteria[o] ?? "");
+    let score = taskTokens.filter((t) => desc.includes(t)).length;
+    if (/^click_/.test(o)) score += 0.3; // 링크 이동을 먼저 시도한다
+    if ([...visited].some((u) => u && desc.includes(u))) score -= 1; // 이미 가본 곳은 뒤로
+    if (score > bestScore) {
+      bestScore = score;
+      best = o;
+    }
+  }
+  const confidence = bestScore >= 1.3 ? 0.93 : bestScore >= 0.3 ? 0.55 : 0.3;
+  const probs = Object.fromEntries(
+    opts.map((o) => [o, o === best ? confidence : (1 - confidence) / Math.max(1, opts.length - 1)]),
+  );
+  return { choice: best, probabilities: probs, confidence };
+}
+
 function answerChoice(name, q, state) {
+  if (
+    name === "action" &&
+    Object.keys(q.criteria ?? {}).some((k) => /^(click|search|type|select|submit)_e\d+$/.test(k))
+  ) {
+    return answerBrowserAction(q, state);
+  }
   const opts = Object.keys(q.criteria ?? {});
   const t = text(state);
   const probs = Object.fromEntries(opts.map((o) => [o, 0]));
@@ -96,8 +138,25 @@ function answerNoul(name, q, state) {
       return { noul: CRISIS.test(t) ? 0.85 : 0.03 };
     case "goal_reached":
       return { noul: String(state?.url ?? "").includes("/posts/") ? 0.95 : 0.05 };
-    case "stuck":
+    // jev-browser(@jkudish/jev-browser): 현재 페이지가 task 의 토큰을 충분히 담고 있으면 도달로 본다
+    case "goal_done": {
+      // 본문이 아니라 URL·제목만 본다. 키워드 매칭으로 신뢰할 수 있는 신호는 그것뿐이고,
+      // 본문까지 세면 홈페이지처럼 모든 단어가 들어 있는 화면에서 곧바로 "달성"이 나온다.
+      // 실제 Jev 는 문장의 의미를 읽는다 — 이건 키 없이 루프를 돌리기 위한 스텁이다.
+      const want = tokens(state?.task);
+      const here = `${state?.current_page?.url ?? ""} ${state?.current_page?.title ?? ""}`;
+      const hit = want.filter((tk) => here.includes(tk)).length;
+      return { noul: hit >= 2 ? 0.92 : 0.08 };
+    }
+    case "stuck": {
+      const history = Array.isArray(state?.history) ? state.history : null;
+      if (history) {
+        const urls = history.map((h) => String(h?.url ?? h));
+        const last = urls.slice(-3);
+        return { noul: last.length === 3 && new Set(last).size === 1 ? 0.9 : 0.05 };
+      }
       return { noul: Number(state?.steps_without_url_change ?? 0) >= 3 ? 0.9 : 0.05 };
+    }
     case "claims_done":
       return { noul: /(완료|done|끝났|마쳤|통과|passes|finished)/i.test(t) ? 0.9 : 0.1 };
     case "needs_check":

@@ -15,7 +15,7 @@ export function TopicTabs({ current }: { current?: string }) {
         </li>
         {TOPICS.map((t) => (
           <li key={t.slug}>
-            <Link href={`/?topic=${t.slug}`} className={`${base} ${current === t.slug ? on : off}`} title={t.hint}>
+            <Link href={`/t/${t.slug}`} className={`${base} ${current === t.slug ? on : off}`}>
               {t.label}
             </Link>
           </li>
