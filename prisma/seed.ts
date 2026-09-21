@@ -1,4 +1,6 @@
 // 시드: 마인드셋 30일치 + 예시 글. 실제 배포 전 예시 글은 지우고 마인드셋만 남길 것.
+import { randomBytes } from "node:crypto";
+
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -171,19 +173,26 @@ async function main() {
     });
   }
 
-  // 예시 계정 (비밀번호: onda-demo-1234). 배포 전 삭제.
+  // 예시 계정·예시 글은 SEED_DEMO=1 일 때만, 그리고 프로덕션이 아닐 때만 만든다.
+  // 마인드셋(위)은 항상 시드한다 — 운영 DB 에도 필요한 데이터이기 때문.
+  if (process.env.SEED_DEMO !== "1" || process.env.NODE_ENV === "production") {
+    console.log(`seeded: ${MINDSETS.length} mindsets (데모 데이터 생략 — SEED_DEMO=1 로 실행하면 포함)`);
+    return;
+  }
+  const demoPassword = process.env.SEED_DEMO_PASSWORD ?? randomBytes(9).toString("base64url");
   const demoNames = ["새벽산책", "무화과", "조용한사람", "월요일"];
   const users = [];
   for (const nickname of demoNames) {
     const u = await prisma.user.upsert({
       where: { nickname },
       update: {},
-      create: { nickname, passwordHash: await bcrypt.hash("onda-demo-1234", 10), birthYear: 1996 },
+      create: { nickname, passwordHash: await bcrypt.hash(demoPassword, 10), birthYear: 1996 },
     });
     // 신규 계정 제한이 데모에 걸리지 않도록 가입일을 과거로
     await prisma.user.update({
       where: { id: u.id },
-      data: { createdAt: new Date(Date.now() - 30 * 86400 * 1000), role: nickname === "새벽산책" ? "admin" : "member" },
+      // 운영자 권한은 시드가 주지 않는다. 필요하면 npm run grant:mod <닉네임> 으로 승격한다.
+      data: { createdAt: new Date(Date.now() - 30 * 86400 * 1000) },
     });
     users.push(u);
   }

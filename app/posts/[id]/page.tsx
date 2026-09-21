@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { topicLabel } from "@/lib/topics";
 import { displayName, timeAgo, excerpt } from "@/lib/format";
 import { ReactionButton } from "@/components/ReactionButton";
+import { findSimilar } from "@/lib/similar";
 import { CommentForm, ReportForm, CareNote } from "@/components/Forms";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,15 @@ export default async function PostPage({ params, searchParams }: Params) {
   if (!post || post.hidden) notFound();
 
   const reacted = Array.isArray(post.reactions) && post.reactions.length > 0;
+
+  // 같은 처지의 글을 붙인다. 사람끼리 잇는 게 아니라 이야기끼리 잇는다.
+  const pool = await prisma.post.findMany({
+    where: { hidden: false, id: { not: post.id } },
+    orderBy: { createdAt: "desc" },
+    take: 120,
+    select: { id: true, title: true, body: true, topic: true },
+  });
+  const similar = await findSimilar({ id: post.id, title: post.title, body: post.body, topic: post.topic }, pool, 3);
 
   return (
     <article className="space-y-8">
@@ -103,6 +113,23 @@ export default async function PostPage({ params, searchParams }: Params) {
           </p>
         )}
       </section>
+
+      {similar.length > 0 ? (
+        <section className="space-y-3 border-t border-line pt-6">
+          <h2 className="serif text-xl font-bold">비슷한 이야기</h2>
+          <ul className="space-y-3">
+            {similar.map((p) => (
+              <li key={p.id}>
+                <Link href={`/posts/${p.id}`} className="hover:text-teal">
+                  <span className="text-sm text-teal">{topicLabel(p.topic)}</span>{" "}
+                  <span className="serif font-bold">{p.title}</span>
+                </Link>
+                <p className="mt-0.5 text-sm text-mute">{excerpt(p.body, 90)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </article>
   );
 }

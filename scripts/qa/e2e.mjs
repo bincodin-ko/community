@@ -91,7 +91,7 @@ ok(
 );
 
 // 3. 신고 3건 → 숨김
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 8; i++) {
   const r = await join("rep_" + rnd());
   await r.goto(r1.url);
   await r.click("summary:has-text('신고')");
@@ -99,13 +99,13 @@ for (let i = 0; i < 3; i++) {
   await r.click('button:has-text("신고 보내기")');
   await Promise.race([r.waitForSelector("text=신고했어요"), r.waitForSelector("text=가려졌어요")]);
 }
-ok("신고 3건 자동 숨김", (await g.goto(r1.url)).status() === 404);
+ok("신규 계정 신고는 가중치가 낮아 여러 건이 필요", (await g.goto(r1.url)).status() === 404);
 
 // 4. 운영자 큐
 const m = await (await browser.newContext()).newPage();
 await m.goto(base + "/login");
 await m.fill('input[name="nickname"]', "새벽산책");
-await m.fill('input[name="password"]', "onda-demo-1234");
+await m.fill('input[name="password"]', process.env.SEED_DEMO_PASSWORD ?? "onda-demo-1234");
 await m.click('main button[type="submit"]');
 await m.waitForURL(base + "/");
 await m.goto(base + "/mod");

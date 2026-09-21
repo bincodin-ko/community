@@ -19,6 +19,9 @@ import {
   NEW_ACCOUNT_HOURS,
   NEW_ACCOUNT_MAX_COMMENTS,
   NEW_ACCOUNT_MAX_POSTS,
+  REPORT_TRUST_HOURS,
+  REPORT_WEIGHT_NEW,
+  REPORT_WEIGHT_TRUSTED,
   TOPIC_SLUGS,
 } from "./topics";
 import { ZodError } from "zod";
@@ -187,6 +190,25 @@ export async function toggleReactionAction(postId: string): Promise<void> {
 
 // ---------- 신고 ----------
 
+/**
+ * 신고들의 가중치 합이 자동 숨김 임계치를 넘는지 본다.
+ * 가입한 지 얼마 안 됐거나 글·댓글을 한 번도 쓴 적 없는 계정의 신고는 가중치가 낮다.
+ * 신고 자체는 언제나 접수되고 운영자 큐에는 올라간다 — 낮추는 것은 "자동 숨김" 권한뿐이다.
+ */
+async function shouldAutoHide(target: { postId?: string; commentId?: string }): Promise<boolean> {
+  const reports = await prisma.report.findMany({
+    where: target.postId ? { postId: target.postId } : { commentId: target.commentId },
+    select: { reporter: { select: { createdAt: true, _count: { select: { posts: true, comments: true } } } } },
+  });
+  const trustCutoff = Date.now() - REPORT_TRUST_HOURS * 3600 * 1000;
+  const weight = reports.reduce((sum, r) => {
+    const contributed = r.reporter._count.posts + r.reporter._count.comments > 0;
+    const seasoned = r.reporter.createdAt.getTime() <= trustCutoff;
+    return sum + (contributed && seasoned ? REPORT_WEIGHT_TRUSTED : REPORT_WEIGHT_NEW);
+  }, 0);
+  return weight >= HIDE_THRESHOLD;
+}
+
 export async function reportAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await getSessionUser();
   if (!user) return { error: "로그인이 필요해요" };
@@ -213,13 +235,15 @@ export async function reportAction(_prev: FormState, formData: FormData): Promis
     return { error: "이미 신고한 글이에요" };
   }
 
-  // 신고 수 증가 + 임계치 자동 숨김. 경합을 피하기 위해 원자적 증가 후 재조회.
+  // 신고 수 증가 + 가중치 합이 임계치를 넘으면 자동 숨김.
+  // 가중치를 쓰는 이유: 급조한 계정 3개로 남의 글을 내리는 공격을 막기 위해서다.
   if (data.postId) {
     await prisma.post.update({ where: { id: data.postId }, data: { reportCount: { increment: 1 } } });
-    await prisma.post.updateMany({
-      where: { id: data.postId, reportCount: { gte: HIDE_THRESHOLD }, hidden: false },
-      data: { hidden: true },
-    });
+    if (await shouldAutoHide({ postId: data.postId })) {
+      await prisma.post.updateMany({ where: { id: data.postId, hidden: false }, data: { hidden: true } });
+    } else {
+      await prisma.post.updateMany({ where: { id: data.postId, flagged: false }, data: { flagged: true } });
+    }
     revalidatePath(`/posts/${data.postId}`);
     revalidatePath("/");
   } else if (data.commentId) {
@@ -228,10 +252,11 @@ export async function reportAction(_prev: FormState, formData: FormData): Promis
       data: { reportCount: { increment: 1 } },
       select: { postId: true },
     });
-    await prisma.comment.updateMany({
-      where: { id: data.commentId, reportCount: { gte: HIDE_THRESHOLD }, hidden: false },
-      data: { hidden: true },
-    });
+    if (await shouldAutoHide({ commentId: data.commentId })) {
+      await prisma.comment.updateMany({ where: { id: data.commentId, hidden: false }, data: { hidden: true } });
+    } else {
+      await prisma.comment.updateMany({ where: { id: data.commentId, flagged: false }, data: { flagged: true } });
+    }
     revalidatePath(`/posts/${c.postId}`);
   }
   return { ok: true };

@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 20
     env:
       DATABASE_URL: file:./dev.db
-      SESSION_SECRET: ci-only-session-secret-not-for-production
+      SESSION_SECRET: ci-only-not-for-production-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       JEV_BASE_URL: http://127.0.0.1:4141/v1/systemone
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
       - name: Static checks
         run: npm run ci
       - name: Database
-        run: npx prisma db push --skip-generate && npx prisma generate && npm run db:seed
+        run: npx prisma db push --skip-generate && npx prisma generate && npm run db:seed:demo
       - name: Build
         run: npx next build
       - name: Start fake Jev and app
@@ -37,6 +37,8 @@ jobs:
           if [ "$up" != "1" ]; then echo "server did not start"; cat server.log; exit 1; fi
       - name: E2E (flows + moderation)
         run: node scripts/qa/e2e.mjs --base http://localhost:3000
+      - name: Copy lint (UI 문구)
+        run: node scripts/qa/copy-lint.mjs
       - name: QA walk (Playwright + Jev)
         run: node scripts/qa/walk.mjs --base http://localhost:3000 --out qa-report.md
       - name: Server log

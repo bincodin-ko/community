@@ -43,9 +43,23 @@ npm run db:reset              # SQLite 생성 + 시드 (마인드셋 30개, 예�
 npm run dev                   # http://localhost:3000
 ```
 
-예시 계정: `새벽산책` / `onda-demo-1234` (배포 전 시드의 예시 글·계정은 삭제할 것).
+예시 계정: `새벽산책` / `onda-demo-1234` (운영자 권한 포함). **데모 계정·예시 글은 `SEED_DEMO=1` 일 때만 만들어지고 프로덕션에서는 아예 생성되지 않는다.** 운영 DB 에는 `npm run db:seed` 로 마인드셋만 들어가고, 운영자는 `npm run grant:mod <닉네임>` 으로 따로 승격한다.
 
 프로덕션: `npm run build && npm start`. Postgres로 옮기려면 `prisma/schema.prisma`의 `provider`와 `DATABASE_URL`만 바꾼다.
+
+## 운영·성장 도구
+
+```bash
+npm run copy:lint   # UI 문구 검사 (시스템 용어·격식체·AI 티)
+npm run cards       # 마인드셋 공유 카드 PNG → public/cards/<날짜>.png
+npm run digest      # 주간 다이제스트 초안 (LLM 없이 결정적으로)
+npm run grant:mod <닉네임> [moderator|admin]
+```
+
+- `/t/<주제>` 주제 아카이브, `/mindset/<날짜>` 공유 페이지(OG 카드), `sitemap.xml`, `robots.txt` — 검색 유입용
+- 글 상세 하단 "비슷한 이야기" — `EMBEDDINGS_URL`(KURE-v1 등)이 있으면 임베딩 코사인, 없으면 문자 바이그램
+- `/mod` 상단 "아직 아무도 답하지 않은 글" — 6시간 동안 댓글·"나도"가 없는 글
+- 신고 가중치: 가입 72시간 미만이거나 기여가 없는 계정의 신고는 0.4점 (급조 계정 3개로 남의 글을 내리는 공격 차단)
 
 ## 자동 QA와 Claude Code 연동
 
@@ -57,6 +71,8 @@ JEV_BASE_URL=http://127.0.0.1:4141/v1/systemone npm run qa   # Playwright + Jev 
 
 - `scripts/qa/walk.mjs`: 라우트별 결정적 검사(HTTP·콘솔·요청 실패·라벨 없는 입력·가로 스크롤) + Jev 문구 판정(개발자 흔적) + 목표 워크("가입해서 글 하나 올리기")를 Jev가 단계마다 결정. 확신이 낮으면 멈추고 사람에게 넘긴다.
 - `.claude/settings.json`: `.ts/.tsx` 편집 직후 타입체크(PostToolUse), 검증 없는 "완료"를 Jev로 잡아 되돌리는 Stop 훅(`scripts/hooks/stop-gate.mjs`). 키가 없거나 Jev가 죽으면 항상 통과.
+- `.githooks/`: `pre-commit`(API 키·개인키·.env·디버그 잔재 차단), `commit-msg`(Jev가 메시지↔diff 일치 확인, 경고만). `npm install` 시 자동 설치.
+- `.github/workflows/qa.yml`: 푸시·PR·매일 03:00 KST에 타입체크·린트·포맷·빌드·E2E·QA 워크·문구 린트 실행, 리포트 업로드.
 - `.mcp.json`: `jev-browser` MCP 서버 — Claude Code가 Jev 결정으로 실제 브라우저를 조작. `TYPESAFE_API_KEY` 필요.
 - 실제 키: `TYPESAFE_API_KEY`(console.typesafe.ai, early access) 또는 `OPENROUTER_API_KEY`(`~typesafe/jev-latest`). 설계·한계는 `docs/08`.
 

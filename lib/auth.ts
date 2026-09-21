@@ -5,10 +5,16 @@ import { prisma } from "./db";
 const COOKIE = "onda_session";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30일
 
+// .env.example 에 들어 있는 값들 — 그대로 배포되면 누구나 세션을 위조할 수 있다.
+const PLACEHOLDER_SECRETS = new Set(["change-me-to-a-long-random-string", "ci-only-session-secret-not-for-production"]);
+
 function secret(): Uint8Array {
   const s = process.env.SESSION_SECRET;
-  if (!s || s.length < 16) {
-    throw new Error("SESSION_SECRET 환경변수를 16자 이상으로 설정하세요 (.env.example 참고)");
+  if (!s || s.length < 32) {
+    throw new Error("SESSION_SECRET 환경변수를 32자 이상으로 설정하세요: openssl rand -base64 48");
+  }
+  if (PLACEHOLDER_SECRETS.has(s) && process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET 이 예시 값 그대로입니다. openssl rand -base64 48 로 새로 만드세요.");
   }
   return new TextEncoder().encode(s);
 }
@@ -47,7 +53,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret());
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
     const id = payload.sub;
     if (!id) return null;
     const user = await prisma.user.findUnique({

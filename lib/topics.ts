@@ -25,8 +25,13 @@ export const REPORT_REASONS = [
   { value: "other", label: "기타" },
 ] as const;
 
-// 신고가 이 수에 도달하면 자동으로 숨기고 운영자 검토 대기
+// 자동 숨김에 필요한 "가중치 합". 신규 계정 신고는 가중치가 낮아, 급조한 계정 여러 개로
+// 남의 글을 내리는 takedown 공격이 통하지 않는다.
 export const HIDE_THRESHOLD = 3;
+// 가입 후 REPORT_TRUST_HOURS 가 지나지 않았거나 글·댓글을 한 번도 쓴 적 없는 계정의 신고 가중치
+export const REPORT_WEIGHT_NEW = 0.4;
+export const REPORT_WEIGHT_TRUSTED = 1;
+export const REPORT_TRUST_HOURS = 72;
 
 // 신규 계정 24시간 제한
 export const NEW_ACCOUNT_HOURS = 24;
@@ -34,3 +39,6 @@ export const NEW_ACCOUNT_MAX_POSTS = 1;
 export const NEW_ACCOUNT_MAX_COMMENTS = 5;
 
 export const MIN_BIRTH_YEAR_AGE = 19;
+
+// 올라온 지 이 시간이 지나도록 댓글·"나도"가 없는 글은 운영자 큐로 올린다.
+export const UNANSWERED_HOURS = 6;

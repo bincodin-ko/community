@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "rm -f prisma/dev.db && prisma db push && tsx prisma/seed.ts",
+    "db:reset": "rm -f prisma/dev.db && prisma db push && SEED_DEMO=1 SEED_DEMO_PASSWORD=onda-demo-1234 tsx prisma/seed.ts && node scripts/grant-mod.mjs 새벽산책 admin",
     "qa": "node scripts/qa/walk.mjs --base ${QA_BASE:-http://localhost:3000} --out qa-report.md",
     "jev:fake": "node scripts/qa/fake-jev.mjs",
     "lint:fix": "eslint . --fix && prettier --write .",
@@ -19,7 +19,12 @@
     "format:check": "prettier --check .",
     "prepare": "git config core.hooksPath .githooks || true",
     "test:e2e": "node scripts/qa/e2e.mjs",
-    "ci": "npm run typecheck && npm run lint && npm run format:check"
+    "ci": "npm run typecheck && npm run lint && npm run format:check",
+    "db:seed:demo": "SEED_DEMO=1 SEED_DEMO_PASSWORD=onda-demo-1234 tsx prisma/seed.ts && node scripts/grant-mod.mjs 새벽산책 admin",
+    "grant:mod": "node scripts/grant-mod.mjs",
+    "cards": "node scripts/growth/render-cards.mjs",
+    "digest": "node scripts/growth/digest.mjs",
+    "copy:lint": "node scripts/qa/copy-lint.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

@@ -34,30 +34,31 @@
 ### 3.1 코드 품질 — "내가 말 안 해도"
 | 층 | 도구 | 이미 됨 | 다음 |
 |---|---|---|---|
-| 편집 즉시 | PostToolUse 타입체크 훅 | ✅ | ESLint + Prettier 훅 추가 |
+| 편집 즉시 | PostToolUse 훅: prettier + eslint --fix + 타입체크 | ✅ | — |
 | 턴 종료 | Stop 훅(Jev) — 검증 없는 완료 되돌림 | ✅ | jev-belay 플러그인으로 교체(실측 AUROC 0.976) |
-| 커밋 | jev-commit(메시지↔diff 일치, 자격증명 탐지) | ⬜ | pre-commit에 추가 |
-| PR | `/code-review`, `/security-review` 스킬 + jev-review 위험도 라벨 | ⬜ | 배포 전 필수 |
-| 매일 밤 | `npm run qa` (Playwright + Jev 워크) → 리포트 → Claude Code 수정 PR | ✅(수동) | Routine으로 자동화, 스크린샷 1장/페이지를 비전 모델에 |
+| 커밋 | pre-commit(키·개인키·.env·디버그 잔재 차단), commit-msg(Jev 메시지↔diff) | ✅ | — |
+| PR | `/code-review`, `/security-review` 스킬 | ✅(1회전 반영) | 배포 전마다 |
+| 매일 밤 | CI에서 `e2e` + `qa walk` + `copy:lint`, 리포트 아티팩트 | ✅ | 실패 시 Claude Code 수정 PR 자동화 |
 | 탐색 테스트 | jev-browser MCP로 "신규 사용자처럼 돌아다녀 보고 막히는 곳 보고" | ✅(설정) | 주 1회 세션 |
 
 ### 3.2 커뮤니티 품질 — 사람이 잘 이용하도록
 | 문제 | 도구 | 방식 |
 |---|---|---|
-| 혐오·만남·광고 | Jev(Noul block + Choice category) + kor_unsmile 2차 의견 | 차단 ≥0.85, 검토 0.55~0.85, 임계치는 우리 글 100건으로 재보정 |
-| 아웃팅 | 규칙(전화·이메일·핸들·URL) + Jev Noul + 브라우저 사전 경고(Transformers.js) | 규칙은 Jev와 무관하게 항상 |
-| 위기 | Jev Noul crisis → 상담 배너, 모더레이터 알림 | 진단 아님. 연락처만 |
-| 첫 글에 답이 없음 | Jev Score urgency + "나도" 유도 + 모더레이터 큐 | 6시간 무응답 글을 모더레이터에게 푸시 |
-| 글이 흘러가 사라짐 | KURE 임베딩 "비슷한 이야기 3개", 검색, 주제 아카이브 | X·디스코드가 못 주는 것 |
-| 카피가 "AI 티" | taste-lint/Sniff Test로 UI 문구 검사, frontend-design 원칙 | 배포 전 문구 린트 |
+| 혐오·만남·광고 | Jev(Noul block + Choice category) + kor_unsmile 2차 의견(`lib/hf-moderation.ts`) | ✅ 차단 ≥0.85, 검토 0.55~0.85. 임계치는 우리 글 100건으로 재보정 필요 |
+| 아웃팅 | 규칙(전화·이메일·핸들·URL) + Jev Noul | ✅ 규칙은 Jev와 무관하게 항상 동작 |
+| 위기 | Jev Noul crisis → 상담 배너 | ✅ 진단 아님. 연락처만 |
+| 첫 글에 답이 없음 | `/mod` "아직 아무도 답하지 않은 글" 큐 | ✅ 6시간 무응답 + 무반응 글을 앞에 띄움 |
+| 남의 글을 3명이 내리는 공격 | 신고 가중치(신규·무기여 계정 0.4) | ✅ 보안 리뷰에서 발견해 수정 |
+| 글이 흘러가 사라짐 | `lib/similar.ts` — 임베딩 있으면 코사인, 없으면 바이그램 Jaccard | ✅ 글 상세 하단 "비슷한 이야기" |
+| 카피가 "AI 티" | `npm run copy:lint` — 결정적 검사 + Jev 판정 | ✅ CI 포함 |
 
 ### 3.3 성장 품질
 | 채널 | 도구 |
 |---|---|
-| X 카드 | OG 이미지 자동 생성(마인드셋 → 이미지), 매일 예약 |
-| 검색 유입 | 비로그인 열람 + 주제별 아카이브 페이지 SEO("게이 커밍아웃 부모 후기") |
-| 주간 다이제스트 | kanana-nano 초안 → 운영자 검토 → 발송 |
-| 분석 | Plausible/Umami(쿠키 없는 분석, 개인정보 최소화와 일치) |
+| X 카드 | `npm run cards` → `public/cards/<날짜>.png` 1200×630, `/mindset/<날짜>` 공유 페이지에 OG 연결 | ✅ |
+| 검색 유입 | `/t/<주제>` 아카이브 + sitemap.xml + robots.txt(운영·개인 화면 제외) | ✅ |
+| 주간 다이제스트 | `npm run digest` — 결정적 초안(LLM 없음) → 운영자 검토 → 발송 | ✅ |
+| 분석 | Plausible/Umami(쿠키 없는 분석, 개인정보 최소화와 일치) | ⬜ |
 
 ## 4. 하지 말 것 (실패 경로)
 - 데이팅 기능 추가 — 원칙 붕괴, 이반시티 2호
