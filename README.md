@@ -17,6 +17,7 @@
 | [docs/stack-recommendation.md](docs/stack-recommendation.md) | 단계별 인프라 추천과 비용, 첫 주에 막힐 지점 |
 | [docs/07-huggingface-opensource.md](docs/07-huggingface-opensource.md) | 허깅페이스 오픈소스: 한국어 혐오 분류(성소수자 라벨), 임베딩, 소형 LLM, 온디바이스, Jev 대체재 |
 | [docs/08-jev-integration.md](docs/08-jev-integration.md) | Jev(TypeSafe System One)란 무엇인가, 온다의 자동 판정 설계, 자동 QA·Stop 훅·MCP DOM 컨트롤, 좋은 점과 한계 |
+| [docs/09-success-playbook.md](docs/09-success-playbook.md) | 성공 정의, 원칙 5가지, 90일 실행 순서, 도구별 품질 향상 지도, 하지 말 것 |
 
 **가장 먼저 읽을 것**: `docs/06` 결론 — 이 제품은 단독 SaaS로 월 1만 달러가 되기 어렵고, 배포 전에 2주짜리 수요 실험(X 마인드셋 카드 + 익명 폼)을 먼저 해야 한다.
 
