@@ -25,7 +25,9 @@
     "cards": "node scripts/growth/render-cards.mjs",
     "digest": "node scripts/growth/digest.mjs",
     "copy:lint": "node scripts/qa/copy-lint.mjs",
-    "browse": "node scripts/qa/browse.mjs"
+    "browse": "node scripts/qa/browse.mjs",
+    "calibrate": "tsx scripts/qa/calibrate.ts",
+    "metrics": "node scripts/metrics.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

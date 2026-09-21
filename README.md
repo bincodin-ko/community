@@ -54,12 +54,19 @@ npm run copy:lint   # UI 문구 검사 (시스템 용어·격식체·AI 티)
 npm run cards       # 마인드셋 공유 카드 PNG → public/cards/<날짜>.png
 npm run digest      # 주간 다이제스트 초안 (LLM 없이 결정적으로)
 npm run grant:mod <닉네임> [moderator|admin]
+npm run metrics     # 터미널에서 북극성·가드레일 지표
+npm run calibrate   # 라벨된 78건으로 모더레이션 임계치 재보정
+npm run browse -- "가족 주제의 이야기 목록을 연다"   # Jev가 DOM을 조작하며 탐색
 ```
 
 - `/t/<주제>` 주제 아카이브, `/mindset/<날짜>` 공유 페이지(OG 카드), `sitemap.xml`, `robots.txt` — 검색 유입용
 - 글 상세 하단 "비슷한 이야기" — `EMBEDDINGS_URL`(KURE-v1 등)이 있으면 임베딩 코사인, 없으면 문자 바이그램
 - `/mod` 상단 "아직 아무도 답하지 않은 글" — 6시간 동안 댓글·"나도"가 없는 글
 - 신고 가중치: 가입 72시간 미만이거나 기여가 없는 계정의 신고는 0.4점 (급조 계정 3개로 남의 글을 내리는 공격 차단)
+- `/mod/stats` 지표 — 이번 주 작성자 수(북극성), 12주 추이, 꾸준함, 검토 대기, 답 없는 글, 주제 분포.
+  우리 DB 에서 직접 계산하며 쿠키·외부 전송·개인 식별자가 없다. 외부 분석은 `NEXT_PUBLIC_ANALYTICS_SRC` 를 넣을 때만 켜진다.
+- `fixtures/moderation-cases.jsonl` — 커뮤니티 정책을 라벨된 78건으로 고정한 데이터셋.
+  정상 48건 중에는 "자기가 들은 혐오 발언을 인용한 글"처럼 **차단하면 안 되는 어려운 사례**가 들어 있다.
 
 ## 자동 QA와 Claude Code 연동
 

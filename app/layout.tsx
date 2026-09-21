@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
+  const analyticsSrc = process.env.NEXT_PUBLIC_ANALYTICS_SRC;
   return (
     <html lang="ko">
       <head>
@@ -24,6 +25,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body>
+        {/* 쿠키 없는 분석(Plausible·Umami 등)을 쓸 때만 켜진다. 기본은 꺼져 있고, 개인 식별자는 넘기지 않는다. */}
+        {analyticsSrc ? (
+          <script defer src={analyticsSrc} data-domain={process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN} />
+        ) : null}
         <Nav user={user} appName={APP} />
         <main className="mx-auto w-full max-w-2xl px-4 pt-6 pb-24 sm:pt-10">{children}</main>
         <footer className="mx-auto w-full max-w-2xl px-4 pb-10 text-sm text-mute">

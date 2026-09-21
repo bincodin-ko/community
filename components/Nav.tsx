@@ -19,9 +19,14 @@ export function Nav({ user, appName }: { user: SessionUser | null; appName: stri
           {user ? (
             <>
               {user.role === "moderator" || user.role === "admin" ? (
-                <Link href="/mod" className="text-mute hover:text-ink">
-                  검토
-                </Link>
+                <>
+                  <Link href="/mod" className="text-mute hover:text-ink">
+                    검토
+                  </Link>
+                  <Link href="/mod/stats" className="text-mute hover:text-ink">
+                    지표
+                  </Link>
+                </>
               ) : null}
               <Link href="/write" className="btn btn-primary">
                 글 쓰기

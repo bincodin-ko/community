@@ -203,7 +203,12 @@ async function main() {
       const p = SAMPLE_POSTS[i];
       const author = users[i % users.length];
       const post = await prisma.post.create({
-        data: { ...p, authorId: author.id, createdAt: new Date(Date.now() - (i + 1) * 5 * 3600 * 1000) },
+        // 데모 글은 최근 8주에 흩뿌린다 — 지표 화면이 한 점만 찍히지 않도록
+        data: {
+          ...p,
+          authorId: author.id,
+          createdAt: new Date(Date.now() - (i * 9 + 2) * 86400 * 1000 - i * 3600 * 1000),
+        },
       });
       // 공감·댓글 약간
       for (const u of users.filter((u) => u.id !== author.id).slice(0, (i % 3) + 1)) {
