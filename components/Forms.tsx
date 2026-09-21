@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { joinAction, loginAction, createPostAction, createCommentAction, reportAction } from "@/lib/actions";
 import { TOPICS, REPORT_REASONS } from "@/lib/topics";
 import type { FormState } from "@/lib/validation";
+import { PiiWarning } from "./PiiWarning";
 
 function Submit({ children, quiet = false }: { children: React.ReactNode; quiet?: boolean }) {
   const { pending } = useFormStatus();
@@ -101,7 +102,8 @@ export function LoginForm() {
 export function PostForm({ defaultTopic, prompt }: { defaultTopic?: string; prompt?: string }) {
   const [state, action] = useActionState(createPostAction, undefined);
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} id="post-form" className="space-y-5">
+      <PiiWarning formId="post-form" fieldNames={["title", "body"]} />
       <fieldset>
         <legend className="text-sm text-mute">어떤 이야기인가요</legend>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -152,8 +154,9 @@ export function PostForm({ defaultTopic, prompt }: { defaultTopic?: string; prom
 export function CommentForm({ postId }: { postId: string }) {
   const [state, action] = useActionState(createCommentAction, undefined);
   return (
-    <form action={action} className="space-y-3" key={state?.ok ? String(Date.now()) : "form"}>
+    <form action={action} id="comment-form" className="space-y-3" key={state?.ok ? String(Date.now()) : "form"}>
       {state?.care ? <CareNote /> : null}
+      <PiiWarning formId="comment-form" fieldNames={["body"]} />
       <input type="hidden" name="postId" value={postId} />
       <textarea
         name="body"

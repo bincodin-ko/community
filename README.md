@@ -73,7 +73,8 @@ JEV_BASE_URL=http://127.0.0.1:4141/v1/systemone npm run qa   # Playwright + Jev 
 - `.claude/settings.json`: `.ts/.tsx` 편집 직후 타입체크(PostToolUse), 검증 없는 "완료"를 Jev로 잡아 되돌리는 Stop 훅(`scripts/hooks/stop-gate.mjs`). 키가 없거나 Jev가 죽으면 항상 통과.
 - `.githooks/`: `pre-commit`(API 키·개인키·.env·디버그 잔재 차단), `commit-msg`(Jev가 메시지↔diff 일치 확인, 경고만). `npm install` 시 자동 설치.
 - `.github/workflows/qa.yml`: 푸시·PR·매일 03:00 KST에 타입체크·린트·포맷·빌드·E2E·QA 워크·문구 린트 실행, 리포트 업로드.
-- `.mcp.json`: `jev-browser` MCP 서버 — Claude Code가 Jev 결정으로 실제 브라우저를 조작. `TYPESAFE_API_KEY` 필요.
+- `.mcp.json`: `jev-browser` MCP 서버 — Claude Code가 Jev 결정으로 실제 브라우저를 조작. `TYPESAFE_API_KEY` 와 `npx playwright install chromium` 이 필요하다(둘 중 하나라도 없으면 실행되지 않는다, `docs/08` §4).
+- 글·댓글 입력 중 신상(전화·이메일·SNS·링크)이 감지되면 브라우저에서만 경고한다. 아무것도 전송하지 않고, 차단도 하지 않는다.
 - 실제 키: `TYPESAFE_API_KEY`(console.typesafe.ai, early access) 또는 `OPENROUTER_API_KEY`(`~typesafe/jev-latest`). 설계·한계는 `docs/08`.
 
 ## 구조

@@ -2,6 +2,8 @@
 // 원칙: "Code owns the loop." 여기서는 질문만 하고, 임계치·실행·실패 정책은 호출하는 코드가 가진다.
 // 키가 없거나 장애가 나면 null을 돌려주고(fail-open), 호출자는 규칙 기반 검사만으로 진행한다.
 
+import { hasPii } from "./pii-patterns";
+
 export type ChoiceQuestion = { type: "choice"; instructions: string; criteria: Record<string, string | null> };
 export type NoulQuestion = { type: "noul"; instructions: string };
 export type JevQuestion = ChoiceQuestion | NoulQuestion;
@@ -105,17 +107,10 @@ export const BLOCK_THRESHOLD = 0.85;
 export const FLAG_THRESHOLD = 0.55;
 export const CRISIS_THRESHOLD = 0.6;
 
-// 규칙 기반: Jev와 무관하게 항상 동작하는 신상 노출 패턴
-const PII_PATTERNS: RegExp[] = [
-  /01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/, // 휴대폰
-  /[\w.+-]+@[\w-]+\.[\w.]+/, // 이메일
-  /(?:instagram\.com|insta:|인스타\s*[:@]|@[a-z0-9_.]{4,})/i, // SNS 핸들
-  /(?:카톡|카카오톡|오픈채팅|open\.kakao\.com)\s*[:\s]?\s*[a-z0-9_]{3,}/i,
-  /https?:\/\/\S+/i,
-];
-
+// 규칙 기반 신상 노출 탐지는 브라우저 경고와 같은 규칙을 쓴다 (lib/pii-patterns.ts).
+// Jev 장애와 무관하게 항상 동작한다.
 export function rulesFlagPII(text: string): boolean {
-  return PII_PATTERNS.some((r) => r.test(text));
+  return hasPii(text);
 }
 
 export async function moderateText(

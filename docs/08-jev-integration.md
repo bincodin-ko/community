@@ -87,6 +87,12 @@ Jev 단독으로는 안 된다. Jev는 **판정기**이고, 찾기(탐색)·고�
 | `BrowserClaw` (Chrome MCP) | 로그인된 실제 크롬 세션, DOM 85% 가지치기, 섀도 DOM·iframe 관통, 네이티브 CDP 이벤트 | — |
 | `public-browser`, KofanLabs `jev-browser-chrome` | Claude Code/Cursor가 내 크롬 프로필을 조작 | 토큰 30%↓, 비용 25%↓ |
 | Stagehand + Jev | 접근성 트리를 state로 | 1과제 약 $0.001 |
+
+**실행 전제 (이 레포에서 확인한 것)**: `.mcp.json` 에 `jev-browser` 를 등록해 두었지만 실제로 돌리려면 두 가지가 필요하다.
+(1) `TYPESAFE_API_KEY` — 없으면 `jev_provider: null` 로 바로 실패한다. (2) 그 패키지가 기대하는 버전의 Playwright Chromium —
+`npx playwright install chromium` 을 MCP 서버가 쓰는 환경에서 한 번 실행해야 한다. 기존에 다른 버전이 깔려 있으면
+`Executable doesn't exist at .../chromium_headless_shell-XXXX` 로 실패한다. 이 두 가지가 없는 환경에서는
+`npm run qa`(우리 워크)가 대체재다 — 같은 결정 루프를 우리가 직접 돌린다.
 | WebMCP 벤치 | Jev + 소형 LLM이 49/49 과제 해결, 프론티어 모델 대비 비용 약 1/112 | 벤치 저자 보고 |
 
 한계: Jev는 **화면을 못 본다**. 레이아웃 깨짐·색 대비·겹침은 비전 모델(jevaluate처럼 페이지당 1장) 또는 결정적 검사(Playwright의 bounding box 겹침 계산, axe-core)가 필요하다. 그리고 각 단계 300~500ms는 빠르지만 "영상"처럼 보이는 것은 대개 편집이다.
