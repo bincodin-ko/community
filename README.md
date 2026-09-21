@@ -1,20 +1,22 @@
 # 온다 (ONDA) — 한국 2030 게이를 위한 텍스트 우선 익명 커뮤니티
 
 > "만남 앱이 아니라, 게이로 사는 마음을 이야기하는 곳."
-> Cade Bradley(@GayExTrad)의 인터뷰 *The Mindset That Changed How I Saw Being Gay* 에서 출발한 제품.
+> Cade Bradley가 진행한 *Intrinsically Ordered* 팟캐스트 에피소드 *The Mindset That Changed How I Saw Being Gay* (게스트: GayUnmasked 창업자 Sigurd Noe-Nygaard)에서 출발한 제품.
 > 이름은 가칭이며 `NEXT_PUBLIC_APP_NAME` 하나로 바꿀 수 있다.
 
 ## 문서
 
 | 문서 | 내용 |
 |---|---|
-| [docs/01-interview-analysis.md](docs/01-interview-analysis.md) | 인터뷰·인물 분석, 핵심 마인드셋, 한국 맥락으로의 번역 |
-| [docs/02-creator-product-analysis.md](docs/02-creator-product-analysis.md) | Cade의 콘텐츠 퍼널(숏폼→롱폼→팟캐스트→뉴스레터→$1 디스코드) 해부와 한계 |
+| [docs/01-interview-analysis.md](docs/01-interview-analysis.md) | 인터뷰 전사 기반 분석(타임코드), Sigurd의 핵심 마인드셋, 호스트의 심리학 프레임, 한국 맥락으로의 번역 |
+| [docs/02-creator-product-analysis.md](docs/02-creator-product-analysis.md) | GayUnmasked 제품 해부: 계기, 기술(Skool), 초기 고객 확보, 어려움, 시장 진입에 필요한 이해 |
 | [docs/03-korea-market-analysis.md](docs/03-korea-market-analysis.md) | 수요 통계, 경쟁 지형(이반시티·게이코리아·X·오픈채팅·데이팅 앱), 아픔의 증거, 문제 3층 분해 |
 | [docs/04-users-and-jtbd.md](docs/04-users-and-jtbd.md) | 페르소나 3종, 반페르소나, 사용자 여정 ↔ 화면 매핑 |
 | [docs/05-product-strategy.md](docs/05-product-strategy.md) | 포지셔닝, 제품 원칙, 기능 우선순위, 신뢰·안전 설계, 수익 모델, 법률 리스크, 로드맵, KPI |
 | [docs/06-idea-validation.md](docs/06-idea-validation.md) | 1인 창업 아이디어 필터로 자기 반박한 15항목 카드 (약한 부분 포함) |
 | [docs/stack-recommendation.md](docs/stack-recommendation.md) | 단계별 인프라 추천과 비용, 첫 주에 막힐 지점 |
+| [docs/07-huggingface-opensource.md](docs/07-huggingface-opensource.md) | 허깅페이스 오픈소스: 한국어 혐오 분류(성소수자 라벨), 임베딩, 소형 LLM, 온디바이스, Jev 대체재 |
+| [docs/08-jev-integration.md](docs/08-jev-integration.md) | Jev(TypeSafe System One)란 무엇인가, 온다의 자동 판정 설계, 자동 QA·Stop 훅·MCP DOM 컨트롤, 좋은 점과 한계 |
 
 **가장 먼저 읽을 것**: `docs/06` 결론 — 이 제품은 단독 SaaS로 월 1만 달러가 되기 어렵고, 배포 전에 2주짜리 수요 실험(X 마인드셋 카드 + 익명 폼)을 먼저 해야 한다.
 
@@ -26,6 +28,8 @@
 - 오늘의 마인드셋(30일치 시드, 질문에 바로 답하기)
 - 신규 계정 24시간 제한(글 1·댓글 5), 즉시 탈퇴(글은 "탈퇴한 사용자"로 익명화)
 - 커뮤니티 약속 페이지, 위기 지원 연락처, 다크 모드, 모바일 대응
+- **자동 판정(Jev)**: 글·댓글 제출 시 차단/검토대기/통과를 확률로 결정, 위기 신호면 상담 연락처 배너, 규칙 기반 신상 패턴은 항상 동작. 키가 없으면 규칙만으로 fail-open
+- **운영자 검토 큐** `/mod` (역할 moderator·admin): 검토 대기·숨김 글/댓글, 최근 신고, 문제 없음/숨기기/복구
 
 없는 것(의도적): 프로필 그리드, 거리순, 사진 업로드, DM, 광고.
 
@@ -42,19 +46,35 @@ npm run dev                   # http://localhost:3000
 
 프로덕션: `npm run build && npm start`. Postgres로 옮기려면 `prisma/schema.prisma`의 `provider`와 `DATABASE_URL`만 바꾼다.
 
+## 자동 QA와 Claude Code 연동
+
+```bash
+npm run jev:fake                     # 키 없이 시험할 가짜 Jev (127.0.0.1:4141)
+JEV_BASE_URL=http://127.0.0.1:4141/v1/systemone npm run dev
+JEV_BASE_URL=http://127.0.0.1:4141/v1/systemone npm run qa   # Playwright + Jev 워크 → qa-report.md
+```
+
+- `scripts/qa/walk.mjs`: 라우트별 결정적 검사(HTTP·콘솔·요청 실패·라벨 없는 입력·가로 스크롤) + Jev 문구 판정(개발자 흔적) + 목표 워크("가입해서 글 하나 올리기")를 Jev가 단계마다 결정. 확신이 낮으면 멈추고 사람에게 넘긴다.
+- `.claude/settings.json`: `.ts/.tsx` 편집 직후 타입체크(PostToolUse), 검증 없는 "완료"를 Jev로 잡아 되돌리는 Stop 훅(`scripts/hooks/stop-gate.mjs`). 키가 없거나 Jev가 죽으면 항상 통과.
+- `.mcp.json`: `jev-browser` MCP 서버 — Claude Code가 Jev 결정으로 실제 브라우저를 조작. `TYPESAFE_API_KEY` 필요.
+- 실제 키: `TYPESAFE_API_KEY`(console.typesafe.ai, early access) 또는 `OPENROUTER_API_KEY`(`~typesafe/jev-latest`). 설계·한계는 `docs/08`.
+
 ## 구조
 
 ```
 app/            페이지 (홈, posts/[id], write, join, login, mindset, guide, settings)
 components/     Nav, MindsetCard, TopicTabs, PostItem, ReactionButton, Forms(클라이언트 폼)
-lib/            db(Prisma), auth(JWT 쿠키), actions(서버 액션), validation(zod), topics(주제·임계치)
+lib/            db(Prisma), auth(JWT 쿠키), actions(서버 액션), validation(zod), topics(주제·임계치), jev(자동 판정)
 prisma/         schema.prisma, seed.ts
+scripts/qa/     walk.mjs(QA 워크), fake-jev.mjs(가짜 Jev)
+scripts/hooks/  stop-gate.mjs, post-edit-typecheck.mjs (Claude Code 훅)
 docs/           분석·전략 문서
 ```
 
 ## 검증된 것
 
 `next build` 통과. Playwright로 가입 → 글 작성 → 신규 계정 제한 → 댓글 → 나도 → 비로그인 열람 → 신고 3건 자동 숨김(404) → 탈퇴 흐름을 확인했다.
+가짜 Jev로 혐오 글 차단, 전화번호 글 검토대기, 위기 글 상담 배너, 만남 목적 댓글 차단, 운영자 큐 숨기기, Stop 훅(검증 없는 완료 되돌림·fail-open), QA 워크(실패 0, 목표 달성)를 확인했다. **실제 Jev 모델로는 아직 검증하지 않았다** — 키를 넣고 임계치를 우리 글로 재보정해야 한다.
 
 ## 다음 단계 (v0.2)
 

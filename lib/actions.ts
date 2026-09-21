@@ -19,8 +19,10 @@ import {
   NEW_ACCOUNT_HOURS,
   NEW_ACCOUNT_MAX_COMMENTS,
   NEW_ACCOUNT_MAX_POSTS,
+  TOPIC_SLUGS,
 } from "./topics";
 import { ZodError } from "zod";
+import { moderateText, blockMessage, BLOCK_THRESHOLD, FLAG_THRESHOLD, CRISIS_THRESHOLD } from "./jev";
 
 function isNewAccount(createdAt: Date): boolean {
   return Date.now() - createdAt.getTime() < NEW_ACCOUNT_HOURS * 3600 * 1000;
@@ -104,6 +106,10 @@ export async function createPostAction(_prev: FormState, formData: FormData): Pr
     }
   }
 
+  // 자동 판정: 규칙(신상 패턴) + Jev. 장애 시 규칙만으로 진행(fail-open).
+  const mod = await moderateText(`${data.title}\n\n${data.body}`, "post", [...TOPIC_SLUGS]);
+  if (mod.block >= BLOCK_THRESHOLD) return { error: blockMessage(mod.category) };
+
   const post = await prisma.post.create({
     data: {
       authorId: user.id,
@@ -111,10 +117,14 @@ export async function createPostAction(_prev: FormState, formData: FormData): Pr
       title: data.title,
       body: data.body,
       anonymous: data.anonymous === "on",
+      flagged: mod.block >= FLAG_THRESHOLD,
+      modCategory: mod.source === "none" ? null : mod.category,
+      modBlock: mod.source === "none" ? null : mod.block,
     },
   });
   revalidatePath("/");
-  redirect(`/posts/${post.id}`);
+  const care = mod.crisis >= CRISIS_THRESHOLD ? "?care=1" : "";
+  redirect(`/posts/${post.id}${care}`);
 }
 
 export async function createCommentAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -140,11 +150,22 @@ export async function createCommentAction(_prev: FormState, formData: FormData):
     }
   }
 
+  const mod = await moderateText(data.body, "comment", []);
+  if (mod.block >= BLOCK_THRESHOLD) return { error: blockMessage(mod.category) };
+
   await prisma.comment.create({
-    data: { postId: data.postId, authorId: user.id, body: data.body, anonymous: data.anonymous === "on" },
+    data: {
+      postId: data.postId,
+      authorId: user.id,
+      body: data.body,
+      anonymous: data.anonymous === "on",
+      flagged: mod.block >= FLAG_THRESHOLD,
+      modCategory: mod.source === "none" ? null : mod.category,
+      modBlock: mod.source === "none" ? null : mod.block,
+    },
   });
   revalidatePath(`/posts/${data.postId}`);
-  return { ok: true };
+  return { ok: true, care: mod.crisis >= CRISIS_THRESHOLD };
 }
 
 // "나도" 토글
@@ -212,4 +233,35 @@ export async function reportAction(_prev: FormState, formData: FormData): Promis
     revalidatePath(`/posts/${c.postId}`);
   }
   return { ok: true };
+}
+
+// ---------- 운영자 검토 큐 ----------
+
+async function requireModerator() {
+  const user = await requireUser();
+  if (user.role !== "moderator" && user.role !== "admin") throw new Error("권한이 없어요");
+  return user;
+}
+
+export async function reviewPostAction(formData: FormData): Promise<void> {
+  await requireModerator();
+  const id = String(formData.get("id") ?? "");
+  const verdict = String(formData.get("verdict") ?? "");
+  if (!id) return;
+  if (verdict === "hide") await prisma.post.update({ where: { id }, data: { hidden: true, flagged: false } });
+  else if (verdict === "restore") await prisma.post.update({ where: { id }, data: { hidden: false, flagged: false } });
+  else await prisma.post.update({ where: { id }, data: { flagged: false } });
+  revalidatePath("/mod");
+  revalidatePath("/");
+}
+
+export async function reviewCommentAction(formData: FormData): Promise<void> {
+  await requireModerator();
+  const id = String(formData.get("id") ?? "");
+  const verdict = String(formData.get("verdict") ?? "");
+  if (!id) return;
+  if (verdict === "hide") await prisma.comment.update({ where: { id }, data: { hidden: true, flagged: false } });
+  else if (verdict === "restore") await prisma.comment.update({ where: { id }, data: { hidden: false, flagged: false } });
+  else await prisma.comment.update({ where: { id }, data: { flagged: false } });
+  revalidatePath("/mod");
 }

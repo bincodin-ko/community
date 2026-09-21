@@ -109,7 +109,10 @@ async function main() {
       create: { nickname, passwordHash: await bcrypt.hash("onda-demo-1234", 10), birthYear: 1996 },
     });
     // 신규 계정 제한이 데모에 걸리지 않도록 가입일을 과거로
-    await prisma.user.update({ where: { id: u.id }, data: { createdAt: new Date(Date.now() - 30 * 86400 * 1000) } });
+    await prisma.user.update({
+      where: { id: u.id },
+      data: { createdAt: new Date(Date.now() - 30 * 86400 * 1000), role: nickname === "새벽산책" ? "admin" : "member" },
+    });
     users.push(u);
   }
 

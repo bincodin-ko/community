@@ -8,3 +8,5 @@ prisma/dev.db-journal
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+qa-report.md
+qa-last.png

@@ -34,6 +34,9 @@ model Post {
   body        String
   anonymous   Boolean  @default(false)
   hidden      Boolean  @default(false)
+  flagged     Boolean  @default(false) // 자동 판정 결과 검토 대기
+  modCategory String?  // ok | outing | hate | sexual_or_hookup | spam
+  modBlock    Float?   // 차단 확률
   reportCount Int      @default(0)
   createdAt   DateTime @default(now())
 
@@ -43,6 +46,7 @@ model Post {
 
   @@index([topic, createdAt])
   @@index([hidden, createdAt])
+  @@index([flagged])
 }
 
 model Comment {
@@ -54,6 +58,9 @@ model Comment {
   body        String
   anonymous   Boolean  @default(false)
   hidden      Boolean  @default(false)
+  flagged     Boolean  @default(false)
+  modCategory String?
+  modBlock    Float?
   reportCount Int      @default(0)
   createdAt   DateTime @default(now())
 

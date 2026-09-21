@@ -46,7 +46,7 @@ export const reportSchema = z.object({
   detail: z.string().trim().max(500).optional(),
 });
 
-export type FormState = { error?: string; ok?: boolean } | undefined;
+export type FormState = { error?: string; ok?: boolean; care?: boolean } | undefined;
 
 export function firstError(e: z.ZodError): string {
   return e.errors[0]?.message ?? "입력을 확인해 주세요";

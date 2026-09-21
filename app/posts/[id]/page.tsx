@@ -6,11 +6,11 @@ import { getSessionUser } from "@/lib/auth";
 import { topicLabel } from "@/lib/topics";
 import { displayName, timeAgo, excerpt } from "@/lib/format";
 import { ReactionButton } from "@/components/ReactionButton";
-import { CommentForm, ReportForm } from "@/components/Forms";
+import { CommentForm, ReportForm, CareNote } from "@/components/Forms";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ id: string }>; searchParams?: Promise<{ care?: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
@@ -19,8 +19,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return { title: post.title, description: excerpt(post.body, 140) };
 }
 
-export default async function PostPage({ params }: Params) {
+export default async function PostPage({ params, searchParams }: Params) {
   const { id } = await params;
+  const sp = searchParams ? await searchParams : {};
   const user = await getSessionUser();
 
   const post = await prisma.post.findUnique({
@@ -42,6 +43,7 @@ export default async function PostPage({ params }: Params) {
 
   return (
     <article className="space-y-8">
+      {sp.care ? <CareNote /> : null}
       <header className="space-y-2">
         <p className="text-sm text-mute">
           <Link href={`/?topic=${post.topic}`} className="text-teal hover:underline">

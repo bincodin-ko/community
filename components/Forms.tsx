@@ -139,6 +139,7 @@ export function CommentForm({ postId }: { postId: string }) {
   const [state, action] = useActionState(createCommentAction, undefined);
   return (
     <form action={action} className="space-y-3" key={state?.ok ? String(Date.now()) : "form"}>
+      {state?.care ? <CareNote /> : null}
       <input type="hidden" name="postId" value={postId} />
       <textarea name="body" className="field min-h-24" maxLength={1000} required placeholder="나도 그랬다고, 혹은 내 경우는 달랐다고." />
       <div className="flex flex-wrap items-center gap-3">
@@ -177,5 +178,14 @@ export function ReportForm({ postId, commentId }: { postId?: string; commentId?:
         <Submit quiet>신고 보내기</Submit>
       </form>
     </details>
+  );
+}
+
+
+export function CareNote() {
+  return (
+    <p className="rounded-xl border border-amber bg-amber-soft px-4 py-3 text-sm">
+      많이 힘든 밤인 것 같아요. 여기 사람들이 읽고 있지만, 지금 바로 누군가와 이야기하고 싶다면 자살예방상담 109(24시간), 띵동 02-924-1224가 있어요.
+    </p>
   );
 }
