@@ -5,12 +5,11 @@ export type MindsetView = { date: string; quote: string; question: string; sourc
 // 이 페이지에서 유일하게 큰 목소리를 내는 요소. 나머지는 조용히.
 export function MindsetCard({ m, compact = false }: { m: MindsetView; compact?: boolean }) {
   return (
-    <section
-      aria-label="오늘의 마인드셋"
-      className="rounded-2xl bg-amber-soft px-6 py-7 sm:px-8 sm:py-9"
-    >
+    <section aria-label="오늘의 마인드셋" className="rounded-2xl bg-amber-soft px-6 py-7 sm:px-8 sm:py-9">
       <p className="text-sm text-mute">{formatDate(m.date)}의 마인드셋</p>
-      <blockquote className={`serif mt-3 font-bold leading-snug text-ink ${compact ? "text-xl" : "text-2xl sm:text-3xl"}`}>
+      <blockquote
+        className={`serif mt-3 leading-snug font-bold text-ink ${compact ? "text-xl" : "text-2xl sm:text-3xl"}`}
+      >
         {m.quote}
       </blockquote>
       <p className="mt-4 text-ink">{m.question}</p>

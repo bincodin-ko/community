@@ -14,7 +14,9 @@ const DEV = /(TODO|FIXME|lorem|undefined|null|\{\{|\}\}|\[object|NaN|console\.|\
 
 function text(state) {
   if (typeof state === "string") return state;
-  return Object.values(state ?? {}).map((v) => (typeof v === "string" ? v : JSON.stringify(v))).join("\n");
+  return Object.values(state ?? {})
+    .map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
+    .join("\n");
 }
 
 function answerChoice(name, q, state) {
@@ -25,16 +27,40 @@ function answerChoice(name, q, state) {
   let confidence = 0.6;
 
   if (name === "category") {
-    choice = HATE.test(t) ? "hate" : HOOKUP.test(t) ? "sexual_or_hookup" : SPAM.test(t) ? "spam" : PII.test(t) ? "outing" : "ok";
+    choice = HATE.test(t)
+      ? "hate"
+      : HOOKUP.test(t)
+        ? "sexual_or_hookup"
+        : SPAM.test(t)
+          ? "spam"
+          : PII.test(t)
+            ? "outing"
+            : "ok";
     confidence = choice === "ok" ? 0.8 : 0.93;
   } else if (name === "topic") {
-    const map = { family: /(엄마|아빠|부모|명절|결혼|선\s*자리)/, military: /(군대|입대|전역|훈련소)/, work: /(회사|직장|팀장|출근|워크숍|학교|캠퍼스)/, comingout: /(커밍아웃|말했다|말해봤다)/, love: /(남자친구|이별|헤어|연애|데이트)/, mind: /(수치|불안|외로|우울|마음)/, daily: /./ };
+    const map = {
+      family: /(엄마|아빠|부모|명절|결혼|선\s*자리)/,
+      military: /(군대|입대|전역|훈련소)/,
+      work: /(회사|직장|팀장|출근|워크숍|학교|캠퍼스)/,
+      comingout: /(커밍아웃|말했다|말해봤다)/,
+      love: /(남자친구|이별|헤어|연애|데이트)/,
+      mind: /(수치|불안|외로|우울|마음)/,
+      daily: /./,
+    };
     choice = opts.find((o) => map[o]?.test(t)) ?? "daily";
     confidence = 0.85;
   } else if (name === "next_action") {
     // QA 워크: state.url 과 요소 목록으로 다음 행동을 고른다
     const url = String(state?.url ?? "");
-    const wanted = url.includes("/posts/") ? "done" : url.includes("/write") ? "글 올리기" : url.includes("/join") ? "시작하기" : state?.logged_in ? "글 쓰기" : "시작하기";
+    const wanted = url.includes("/posts/")
+      ? "done"
+      : url.includes("/write")
+        ? "글 올리기"
+        : url.includes("/join")
+          ? "시작하기"
+          : state?.logged_in
+            ? "글 쓰기"
+            : "시작하기";
     const els = Array.isArray(state?.elements) ? state.elements : [];
     // 같은 라벨이면 폼 제출 버튼을 내비 링크보다 우선한다
     const matches = els.filter((e) => String(e.label ?? "").includes(wanted));
@@ -45,9 +71,14 @@ function answerChoice(name, q, state) {
     // 일반 choice: 기준 문장과 state 의 단어 겹침으로 고른다
     let best = -1;
     for (const o of opts) {
-      const words = String(q.criteria[o] ?? o).split(/\s+/).filter((w) => w.length > 1);
+      const words = String(q.criteria[o] ?? o)
+        .split(/\s+/)
+        .filter((w) => w.length > 1);
       const score = words.filter((w) => t.includes(w)).length;
-      if (score > best) { best = score; choice = o; }
+      if (score > best) {
+        best = score;
+        choice = o;
+      }
     }
     confidence = best > 0 ? 0.75 : 0.5;
   }
@@ -59,17 +90,25 @@ function answerNoul(name, q, state) {
   const t = text(state);
   const ins = String(q.instructions ?? "");
   switch (name) {
-    case "block": return { noul: HATE.test(t) ? 0.95 : HOOKUP.test(t) ? 0.9 : SPAM.test(t) ? 0.7 : PII.test(t) ? 0.65 : 0.05 };
-    case "crisis": return { noul: CRISIS.test(t) ? 0.85 : 0.03 };
-    case "goal_reached": return { noul: String(state?.url ?? "").includes("/posts/") ? 0.95 : 0.05 };
-    case "stuck": return { noul: Number(state?.steps_without_url_change ?? 0) >= 3 ? 0.9 : 0.05 };
-    case "claims_done": return { noul: /(완료|done|끝났|마쳤|통과|passes|finished)/i.test(t) ? 0.9 : 0.1 };
-    case "needs_check": return { noul: /(\.tsx?|\.mjs|\.prisma|package\.json)/.test(t) ? 0.85 : 0.2 };
-    case "claimed_check_ran": return { noul: /(테스트를? 돌렸|ran the tests|npm test|typecheck 통과|build 통과)/i.test(t) ? 0.8 : 0.1 };
+    case "block":
+      return { noul: HATE.test(t) ? 0.95 : HOOKUP.test(t) ? 0.9 : SPAM.test(t) ? 0.7 : PII.test(t) ? 0.65 : 0.05 };
+    case "crisis":
+      return { noul: CRISIS.test(t) ? 0.85 : 0.03 };
+    case "goal_reached":
+      return { noul: String(state?.url ?? "").includes("/posts/") ? 0.95 : 0.05 };
+    case "stuck":
+      return { noul: Number(state?.steps_without_url_change ?? 0) >= 3 ? 0.9 : 0.05 };
+    case "claims_done":
+      return { noul: /(완료|done|끝났|마쳤|통과|passes|finished)/i.test(t) ? 0.9 : 0.1 };
+    case "needs_check":
+      return { noul: /(\.tsx?|\.mjs|\.prisma|package\.json)/.test(t) ? 0.85 : 0.2 };
+    case "claimed_check_ran":
+      return { noul: /(테스트를? 돌렸|ran the tests|npm test|typecheck 통과|build 통과)/i.test(t) ? 0.8 : 0.1 };
     default:
       if (/dev|artifact|개발자|미번역|untranslated|key/i.test(ins)) {
         // 줄 단위 판정: 이름 끝의 인덱스로 해당 줄을 본다
-        const m = name.match(/_(\d+)$/); const lines = Array.isArray(state?.lines) ? state.lines : [t];
+        const m = name.match(/_(\d+)$/);
+        const lines = Array.isArray(state?.lines) ? state.lines : [t];
         const line = m ? String(lines[Number(m[1])] ?? "") : t;
         return { noul: DEV.test(line) ? 0.9 : 0.03 };
       }
@@ -81,9 +120,17 @@ const server = http.createServer((req, res) => {
   let body = "";
   req.on("data", (c) => (body += c));
   req.on("end", () => {
-    if (req.method !== "POST") { res.writeHead(405); return res.end(); }
+    if (req.method !== "POST") {
+      res.writeHead(405);
+      return res.end();
+    }
     let parsed;
-    try { parsed = JSON.parse(body || "{}"); } catch { res.writeHead(400); return res.end('{"error":"bad json"}'); }
+    try {
+      parsed = JSON.parse(body || "{}");
+    } catch {
+      res.writeHead(400);
+      return res.end('{"error":"bad json"}');
+    }
     const { state, questions = {} } = parsed;
     const answers = {};
     for (const [name, q] of Object.entries(questions)) {

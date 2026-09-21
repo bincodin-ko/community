@@ -54,7 +54,7 @@ export default async function PostPage({ params, searchParams }: Params) {
           <span aria-hidden> · </span>
           <time dateTime={post.createdAt.toISOString()}>{timeAgo(post.createdAt)}</time>
         </p>
-        <h1 className="serif text-3xl font-bold leading-tight">{post.title}</h1>
+        <h1 className="serif text-3xl leading-tight font-bold">{post.title}</h1>
       </header>
 
       <div className="prose-onda">{post.body}</div>
@@ -67,7 +67,9 @@ export default async function PostPage({ params, searchParams }: Params) {
 
       <section className="space-y-5">
         <h2 className="serif text-xl font-bold">댓글 {post.comments.length}</h2>
-        {post.comments.length === 0 ? <p className="text-sm text-mute">아직 댓글이 없어요. 먼저 한 마디 남겨도 괜찮아요.</p> : null}
+        {post.comments.length === 0 ? (
+          <p className="text-sm text-mute">아직 댓글이 없어요. 먼저 한 마디 남겨도 괜찮아요.</p>
+        ) : null}
         <ul className="space-y-5">
           {post.comments.map((c) => (
             <li key={c.id} className="border-l-2 border-line pl-4">

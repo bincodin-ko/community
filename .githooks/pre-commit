@@ -1,0 +1,3 @@
+#!/bin/sh
+# git config core.hooksPath .githooks 로 활성화 (npm install 시 prepare 스크립트가 설정)
+exec node "$(git rev-parse --show-toplevel)/scripts/hooks/pre-commit.mjs"

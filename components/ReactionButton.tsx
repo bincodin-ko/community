@@ -1,6 +1,16 @@
 import { toggleReactionAction } from "@/lib/actions";
 
-export function ReactionButton({ postId, count, active, loggedIn }: { postId: string; count: number; active: boolean; loggedIn: boolean }) {
+export function ReactionButton({
+  postId,
+  count,
+  active,
+  loggedIn,
+}: {
+  postId: string;
+  count: number;
+  active: boolean;
+  loggedIn: boolean;
+}) {
   const action = toggleReactionAction.bind(null, postId);
   return (
     <form action={action}>

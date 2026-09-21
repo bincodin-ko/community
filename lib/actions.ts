@@ -102,7 +102,9 @@ export async function createPostAction(_prev: FormState, formData: FormData): Pr
       where: { authorId: user.id, createdAt: { gte: new Date(Date.now() - NEW_ACCOUNT_HOURS * 3600 * 1000) } },
     });
     if (count >= NEW_ACCOUNT_MAX_POSTS) {
-      return { error: `가입 첫 ${NEW_ACCOUNT_HOURS}시간에는 글을 ${NEW_ACCOUNT_MAX_POSTS}개까지 쓸 수 있어요. 내일 다시 와 주세요.` };
+      return {
+        error: `가입 첫 ${NEW_ACCOUNT_HOURS}시간에는 글을 ${NEW_ACCOUNT_MAX_POSTS}개까지 쓸 수 있어요. 내일 다시 와 주세요.`,
+      };
     }
   }
 
@@ -261,7 +263,8 @@ export async function reviewCommentAction(formData: FormData): Promise<void> {
   const verdict = String(formData.get("verdict") ?? "");
   if (!id) return;
   if (verdict === "hide") await prisma.comment.update({ where: { id }, data: { hidden: true, flagged: false } });
-  else if (verdict === "restore") await prisma.comment.update({ where: { id }, data: { hidden: false, flagged: false } });
+  else if (verdict === "restore")
+    await prisma.comment.update({ where: { id }, data: { hidden: false, flagged: false } });
   else await prisma.comment.update({ where: { id }, data: { flagged: false } });
   revalidatePath("/mod");
 }

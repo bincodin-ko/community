@@ -23,7 +23,7 @@ export function PostItem({ p }: { p: PostListItem }) {
         <span aria-hidden>·</span>
         <time dateTime={p.createdAt.toISOString()}>{timeAgo(p.createdAt)}</time>
       </div>
-      <h3 className="serif mt-1.5 text-xl font-bold leading-snug">
+      <h3 className="serif mt-1.5 text-xl leading-snug font-bold">
         <Link href={`/posts/${p.id}`} className="hover:text-teal">
           {p.title}
         </Link>

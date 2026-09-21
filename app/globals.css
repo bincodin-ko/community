@@ -114,7 +114,10 @@ select:focus-visible {
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1;
-  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
 }
 .btn-primary {
   background: var(--teal);

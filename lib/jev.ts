@@ -16,7 +16,12 @@ function provider(): Provider | null {
   const base = process.env.JEV_BASE_URL; // 테스트용 가짜 서버 또는 게이트웨이
   const tsKey = process.env.TYPESAFE_API_KEY;
   const orKey = process.env.OPENROUTER_API_KEY;
-  if (base) return { url: base.replace(/\/$/, ""), model: process.env.JEV_MODEL ?? "jev-latest", key: tsKey ?? orKey ?? "test" };
+  if (base)
+    return {
+      url: base.replace(/\/$/, ""),
+      model: process.env.JEV_MODEL ?? "jev-latest",
+      key: tsKey ?? orKey ?? "test",
+    };
   if (tsKey) return { url: "https://api.typesafe.ai/v1/systemone", model: "jev-latest", key: tsKey };
   if (orKey) return { url: "https://openrouter.ai/api/alpha/decisions", model: "~typesafe/jev-latest", key: orKey };
   return null;
@@ -78,7 +83,8 @@ export async function askJev(
 
 export const MOD_CATEGORIES = {
   ok: "커뮤니티 약속을 지키는 평범한 이야기, 고민, 질문, 감정 표현",
-  outing: "특정 개인을 식별할 수 있는 정보(실명, 학교·회사명과 결합된 특징, 전화번호, 이메일, SNS 계정, 사진 링크, 사는 동네와 직업의 조합)를 본인 동의 없이 드러냄",
+  outing:
+    "특정 개인을 식별할 수 있는 정보(실명, 학교·회사명과 결합된 특징, 전화번호, 이메일, SNS 계정, 사진 링크, 사는 동네와 직업의 조합)를 본인 동의 없이 드러냄",
   hate: "성소수자·여성·장애·인종·종교·지역 등에 대한 혐오, 모욕, 괴롭힘, 위협",
   sexual_or_hookup: "성행위 묘사, 만남·섹스 상대 구하기, 사진·연락처 교환 유도, 위치 기반 만남 요청",
   spam: "광고, 업소·마사지·호스트바 홍보, 외부 링크 유도, 반복 도배, 의미 없는 글",
@@ -112,7 +118,11 @@ export function rulesFlagPII(text: string): boolean {
   return PII_PATTERNS.some((r) => r.test(text));
 }
 
-export async function moderateText(text: string, kind: "post" | "comment", topics: string[]): Promise<ModerationResult> {
+export async function moderateText(
+  text: string,
+  kind: "post" | "comment",
+  topics: string[],
+): Promise<ModerationResult> {
   const pii = rulesFlagPII(text);
   const base: ModerationResult = {
     source: pii ? "rules" : "none",
@@ -129,7 +139,11 @@ export async function moderateText(text: string, kind: "post" | "comment", topic
     text: text.slice(0, 6000),
   };
   const questions: Record<string, JevQuestion> = {
-    block: { type: "noul", instructions: "`text`는 `community_rules`를 위반하여 게시를 차단해야 한다. 단순히 거칠거나 슬픈 글은 위반이 아니다." },
+    block: {
+      type: "noul",
+      instructions:
+        "`text`는 `community_rules`를 위반하여 게시를 차단해야 한다. 단순히 거칠거나 슬픈 글은 위반이 아니다.",
+    },
     category: { type: "choice", instructions: "`text`에 가장 잘 맞는 분류를 고른다.", criteria: { ...MOD_CATEGORIES } },
     crisis: { type: "noul", instructions: "`text`의 작성자가 자해·자살을 생각하거나 계획하고 있다는 신호가 있다." },
   };

@@ -12,8 +12,8 @@ export default async function JoinPage() {
       <header>
         <h1 className="serif text-3xl font-bold">닉네임 하나로 시작해요</h1>
         <p className="mt-2 text-sm text-mute">
-          이메일도, 전화번호도, 사진도 받지 않아요. 비밀번호를 잊으면 복구할 방법이 없으니 잘 적어두세요 — 그게 우리가 당신을
-          모르는 대가예요.
+          이메일도, 전화번호도, 사진도 받지 않아요. 비밀번호를 잊으면 복구할 방법이 없으니 잘 적어두세요 — 그게 우리가
+          당신을 모르는 대가예요.
         </p>
       </header>
       <JoinForm />

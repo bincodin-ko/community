@@ -37,19 +37,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </p>
       ) : null}
       {sp.bye ? (
-        <p className="rounded-xl border border-line bg-paper px-4 py-3 text-sm">탈퇴했어요. 남긴 글은 '탈퇴한 사용자'로 남습니다. 언제든 다시 와도 괜찮아요.</p>
+        <p className="rounded-xl border border-line bg-paper px-4 py-3 text-sm">
+          탈퇴했어요. 남긴 글은 '탈퇴한 사용자'로 남습니다. 언제든 다시 와도 괜찮아요.
+        </p>
       ) : null}
 
       {!user ? (
         <section className="space-y-3">
-          <h1 className="serif text-3xl font-bold leading-tight sm:text-4xl">
+          <h1 className="serif text-3xl leading-tight font-bold sm:text-4xl">
             만남 앱이 아니라,
             <br />
             게이로 사는 마음을 이야기하는 곳.
           </h1>
           <p className="max-w-prose text-mute">
-            얼굴도, 거리도, 스펙도 없어요. 닉네임 하나로 들어와서 커밍아웃, 가족, 군대, 회사, 연애, 그리고 그냥 오늘 있었던 일을
-            이야기해요. 읽는 건 로그인 없이도 돼요.
+            얼굴도, 거리도, 스펙도 없어요. 닉네임 하나로 들어와서 커밍아웃, 가족, 군대, 회사, 연애, 그리고 그냥 오늘
+            있었던 일을 이야기해요. 읽는 건 로그인 없이도 돼요.
           </p>
         </section>
       ) : null}

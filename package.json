@@ -7,13 +7,19 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "rm -f prisma/dev.db && prisma db push && tsx prisma/seed.ts",
     "qa": "node scripts/qa/walk.mjs --base ${QA_BASE:-http://localhost:3000} --out qa-report.md",
-    "jev:fake": "node scripts/qa/fake-jev.mjs"
+    "jev:fake": "node scripts/qa/fake-jev.mjs",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "test:e2e": "node scripts/qa/e2e.mjs",
+    "ci": "npm run typecheck && npm run lint && npm run format:check"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -29,10 +35,14 @@
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.25",
+    "playwright": "^1.50.0",
+    "prettier": "^3.9.8",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^6.19.0",
     "tailwindcss": "^4.1.0",
     "tsx": "^4.20.0",
-    "typescript": "^5.8.0",
-    "playwright": "^1.50.0"
+    "typescript": "^5.8.0"
   }
 }

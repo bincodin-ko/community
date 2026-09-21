@@ -6,7 +6,11 @@ export const metadata = { title: "마인드셋" };
 export const dynamic = "force-dynamic";
 
 export default async function MindsetPage() {
-  const list = await prisma.mindset.findMany({ where: { date: { lte: todayKST() } }, orderBy: { date: "desc" }, take: 60 });
+  const list = await prisma.mindset.findMany({
+    where: { date: { lte: todayKST() } },
+    orderBy: { date: "desc" },
+    take: 60,
+  });
   return (
     <div className="space-y-8">
       <header>

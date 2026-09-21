@@ -4,7 +4,11 @@ import { PostForm } from "@/components/Forms";
 
 export const metadata = { title: "글 쓰기" };
 
-export default async function WritePage({ searchParams }: { searchParams: Promise<{ topic?: string; prompt?: string }> }) {
+export default async function WritePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string; prompt?: string }>;
+}) {
   const user = await getSessionUser();
   const sp = await searchParams;
   if (!user) redirect(`/login?next=/write${sp.topic ? `?topic=${sp.topic}` : ""}`);

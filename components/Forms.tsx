@@ -2,13 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  joinAction,
-  loginAction,
-  createPostAction,
-  createCommentAction,
-  reportAction,
-} from "@/lib/actions";
+import { joinAction, loginAction, createPostAction, createCommentAction, reportAction } from "@/lib/actions";
 import { TOPICS, REPORT_REASONS } from "@/lib/topics";
 import type { FormState } from "@/lib/validation";
 
@@ -38,11 +32,25 @@ export function JoinForm() {
     <form action={action} className="space-y-4">
       <label className="block">
         <span className="text-sm text-mute">닉네임 (나중에 바꿀 수 있어요)</span>
-        <input name="nickname" className="field mt-1" autoComplete="off" maxLength={12} required placeholder="예: 새벽산책" />
+        <input
+          name="nickname"
+          className="field mt-1"
+          autoComplete="off"
+          maxLength={12}
+          required
+          placeholder="예: 새벽산책"
+        />
       </label>
       <label className="block">
         <span className="text-sm text-mute">비밀번호 (8자 이상)</span>
-        <input name="password" type="password" className="field mt-1" autoComplete="new-password" minLength={8} required />
+        <input
+          name="password"
+          type="password"
+          className="field mt-1"
+          autoComplete="new-password"
+          minLength={8}
+          required
+        />
       </label>
       <label className="block">
         <span className="text-sm text-mute">출생연도 — 가입 후 바꿀 수 없어요. 나이 사칭을 막기 위해서예요.</span>
@@ -99,7 +107,13 @@ export function PostForm({ defaultTopic, prompt }: { defaultTopic?: string; prom
         <div className="mt-2 flex flex-wrap gap-2">
           {TOPICS.map((t) => (
             <label key={t.slug} className="cursor-pointer">
-              <input type="radio" name="topic" value={t.slug} defaultChecked={t.slug === (defaultTopic ?? "mind")} className="peer sr-only" />
+              <input
+                type="radio"
+                name="topic"
+                value={t.slug}
+                defaultChecked={t.slug === (defaultTopic ?? "mind")}
+                className="peer sr-only"
+              />
               <span className="inline-block rounded-full border border-line px-3 py-1.5 text-sm text-mute peer-checked:border-teal peer-checked:bg-teal peer-checked:text-paper peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-teal">
                 {t.label}
               </span>
@@ -109,7 +123,7 @@ export function PostForm({ defaultTopic, prompt }: { defaultTopic?: string; prom
       </fieldset>
       <label className="block">
         <span className="text-sm text-mute">제목</span>
-        <input name="title" className="field mt-1 serif text-lg" maxLength={80} required placeholder="한 줄로" />
+        <input name="title" className="field serif mt-1 text-lg" maxLength={80} required placeholder="한 줄로" />
       </label>
       <label className="block">
         <span className="text-sm text-mute">본문</span>
@@ -141,7 +155,13 @@ export function CommentForm({ postId }: { postId: string }) {
     <form action={action} className="space-y-3" key={state?.ok ? String(Date.now()) : "form"}>
       {state?.care ? <CareNote /> : null}
       <input type="hidden" name="postId" value={postId} />
-      <textarea name="body" className="field min-h-24" maxLength={1000} required placeholder="나도 그랬다고, 혹은 내 경우는 달랐다고." />
+      <textarea
+        name="body"
+        className="field min-h-24"
+        maxLength={1000}
+        required
+        placeholder="나도 그랬다고, 혹은 내 경우는 달랐다고."
+      />
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="anonymous" />
@@ -181,11 +201,11 @@ export function ReportForm({ postId, commentId }: { postId?: string; commentId?:
   );
 }
 
-
 export function CareNote() {
   return (
     <p className="rounded-xl border border-amber bg-amber-soft px-4 py-3 text-sm">
-      많이 힘든 밤인 것 같아요. 여기 사람들이 읽고 있지만, 지금 바로 누군가와 이야기하고 싶다면 자살예방상담 109(24시간), 띵동 02-924-1224가 있어요.
+      많이 힘든 밤인 것 같아요. 여기 사람들이 읽고 있지만, 지금 바로 누군가와 이야기하고 싶다면 자살예방상담
+      109(24시간), 띵동 02-924-1224가 있어요.
     </p>
   );
 }

@@ -25,14 +25,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Nav user={user} appName={APP} />
-        <main className="mx-auto w-full max-w-2xl px-4 pb-24 pt-6 sm:pt-10">{children}</main>
+        <main className="mx-auto w-full max-w-2xl px-4 pt-6 pb-24 sm:pt-10">{children}</main>
         <footer className="mx-auto w-full max-w-2xl px-4 pb-10 text-sm text-mute">
           <p>
-            {APP}는 실명·이메일·전화번호·사진을 요구하지 않습니다. 성적 지향은 민감정보이며, 우리는 그것을 최소한으로만 다룹니다.
+            {APP}는 실명·이메일·전화번호·사진을 요구하지 않습니다. 성적 지향은 민감정보이며, 우리는 그것을 최소한으로만
+            다룹니다.
           </p>
-          <p className="mt-2">
-            힘든 밤이라면 — 자살예방상담 109 · 청소년 성소수자 위기지원 띵동 02-924-1224
-          </p>
+          <p className="mt-2">힘든 밤이라면 — 자살예방상담 109 · 청소년 성소수자 위기지원 띵동 02-924-1224</p>
         </footer>
       </body>
     </html>
