@@ -4,3 +4,4 @@ package-lock.json
 prisma/dev.db
 docs
 *.md
+prisma/schema.prisma

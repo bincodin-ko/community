@@ -104,3 +104,25 @@ model Mindset {
   question String
   source   String? // 출처/영감 (예: Cade Bradley)
 }
+
+// ---- 집계 전용 조회수. 방문자 식별자를 만들지 않는다. ----
+// 쿠키도, 세션도, IP 해시도 저장하지 않는다. 그래서 "순 방문자"는 셀 수 없고 세지 않는다.
+// 남는 것은 "어느 날 어느 화면이 몇 번 열렸는가"뿐이다.
+
+model PageDay {
+  date  String // YYYY-MM-DD (KST)
+  path  String // 정규화된 경로만 저장한다 (lib/analytics.ts 의 허용 목록)
+  views Int    @default(0)
+
+  @@id([date, path])
+  @@index([date])
+}
+
+model RefDay {
+  date  String
+  host  String // 유입 출처의 호스트명만. 전체 URL 도, 쿼리스트링도 저장하지 않는다.
+  views Int    @default(0)
+
+  @@id([date, host])
+  @@index([date])
+}

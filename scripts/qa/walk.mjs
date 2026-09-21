@@ -55,7 +55,9 @@ async function checkRoute(ctx, route) {
   page.on("requestfailed", (r) => {
     const u = r.url();
     const err = r.failure()?.errorText ?? "";
-    if (u.startsWith(BASE) && !(err === "net::ERR_ABORTED" && /[?&]_rsc=/.test(u))) failed.push(`${err} ${u}`);
+    // Next 링크 프리페치와 집계 비콘은 이동 중 취소가 정상이다
+    const intentionalAbort = err === "net::ERR_ABORTED" && (/[?&]_rsc=/.test(u) || u.endsWith("/api/hit"));
+    if (u.startsWith(BASE) && !intentionalAbort) failed.push(`${err} ${u}`);
   });
   page.on("response", (r) => {
     if (r.url().startsWith(BASE) && r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);

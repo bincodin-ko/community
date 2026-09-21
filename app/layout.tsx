@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { Beacon } from "@/components/Beacon";
 import { getSessionUser } from "@/lib/auth";
 
 const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "온다";
@@ -29,6 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {analyticsSrc ? (
           <script defer src={analyticsSrc} data-domain={process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN} />
         ) : null}
+        {process.env.NEXT_PUBLIC_DISABLE_ANALYTICS === "1" ? null : <Beacon />}
         <Nav user={user} appName={APP} />
         <main className="mx-auto w-full max-w-2xl px-4 pt-6 pb-24 sm:pt-10">{children}</main>
         <footer className="mx-auto w-full max-w-2xl px-4 pb-10 text-sm text-mute">

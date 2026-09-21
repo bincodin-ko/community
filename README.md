@@ -18,6 +18,11 @@
 | [docs/07-huggingface-opensource.md](docs/07-huggingface-opensource.md) | 허깅페이스 오픈소스: 한국어 혐오 분류(성소수자 라벨), 임베딩, 소형 LLM, 온디바이스, Jev 대체재 |
 | [docs/08-jev-integration.md](docs/08-jev-integration.md) | Jev(TypeSafe System One)란 무엇인가, 온다의 자동 판정 설계, 자동 QA·Stop 훅·MCP DOM 컨트롤, 좋은 점과 한계 |
 | [docs/09-success-playbook.md](docs/09-success-playbook.md) | 성공 정의, 원칙 5가지, 90일 실행 순서, 도구별 품질 향상 지도, 하지 말 것 |
+| [docs/10-status-and-next.md](docs/10-status-and-next.md) | **된 것·안 된 것·남은 것과 각각을 어떻게 하면 되는지** |
+
+**지금 상태가 궁금하면**: `docs/10-status-and-next.md` 한 장이면 된다.
+
+**작업 방식을 재사용하려면**: `.claude/skills/source-to-product/` — 소스(영상·인터뷰·남의 제품) 하나에서 제품까지 가는 순서를 스킬로 만들어 뒀다. 다른 프로젝트에서 쓰려면 `~/.claude/skills/` 로 복사한다.
 
 **가장 먼저 읽을 것**: `docs/06` 결론 — 이 제품은 단독 SaaS로 월 1만 달러가 되기 어렵고, 배포 전에 2주짜리 수요 실험(X 마인드셋 카드 + 익명 폼)을 먼저 해야 한다.
 
@@ -99,7 +104,8 @@ docs/           분석·전략 문서
 ## 검증된 것
 
 `next build` 통과. Playwright로 가입 → 글 작성 → 신규 계정 제한 → 댓글 → 나도 → 비로그인 열람 → 신고 3건 자동 숨김(404) → 탈퇴 흐름을 확인했다.
-가짜 Jev로 혐오 글 차단, 전화번호 글 검토대기, 위기 글 상담 배너, 만남 목적 댓글 차단, 운영자 큐 숨기기, Stop 훅(검증 없는 완료 되돌림·fail-open), QA 워크(실패 0, 목표 달성)를 확인했다. **실제 Jev 모델로는 아직 검증하지 않았다** — 키를 넣고 임계치를 우리 글로 재보정해야 한다.
+**여기까지 전부 가짜 Jev(`scripts/qa/fake-jev.mjs`, 규칙 기반 로컬 스텁)로 검증했다. 실제 Jev API 키는 이 레포에 없고 한 번도 호출하지 않았다.**
+확인된 것은 배선과 루프이지 판정 품질이 아니다. 가짜 Jev로 혐오 글 차단, 전화번호 글 검토대기, 위기 글 상담 배너, 만남 목적 댓글 차단, 운영자 큐 숨기기, Stop 훅(검증 없는 완료 되돌림·fail-open), QA 워크(실패 0, 목표 달성)를 확인했다. **실제 Jev 모델로는 아직 검증하지 않았다** — 키를 넣고 임계치를 우리 글로 재보정해야 한다.
 
 ## 다음 단계 (v0.2)
 

@@ -4,6 +4,7 @@
  */
 import { prisma } from "./db";
 import { UNANSWERED_HOURS, TOPICS } from "./topics";
+import { PATH_LABELS } from "./analytics";
 
 const DAY = 86400 * 1000;
 const WEEK = 7 * DAY;
@@ -20,6 +21,12 @@ export type Metrics = {
   outingCaught: number;
   topics: Array<{ slug: string; label: string; posts: number }>;
   totals: { members: number; posts: number; comments: number };
+  views: {
+    days: number;
+    total: number;
+    pages: Array<{ path: string; label: string; views: number }>;
+    refs: Array<{ host: string; views: number }>;
+  };
 };
 
 function kstLabel(d: Date): string {
@@ -84,6 +91,21 @@ export async function getMetrics(weekCount = 12): Promise<Metrics> {
   const pendingDates = [...pendingPosts, ...pendingComments].map((x) => x.createdAt.getTime());
   const oldestPendingHours = pendingDates.length ? (now - Math.min(...pendingDates)) / 3600000 : null;
 
+  // 조회 집계 — 최근 7일. 순 방문자는 세지 않는다(식별자를 만들지 않기 때문에).
+  const viewDays = 7;
+  const dates: string[] = [];
+  for (let i = 0; i < viewDays; i++) {
+    dates.push(new Date(now + 9 * 3600 * 1000 - i * DAY).toISOString().slice(0, 10));
+  }
+  const [pageRows, refRows] = await Promise.all([
+    prisma.pageDay.findMany({ where: { date: { in: dates } } }),
+    prisma.refDay.findMany({ where: { date: { in: dates } } }),
+  ]);
+  const pageAgg = new Map<string, number>();
+  for (const r of pageRows) pageAgg.set(r.path, (pageAgg.get(r.path) ?? 0) + r.views);
+  const refAgg = new Map<string, number>();
+  for (const r of refRows) refAgg.set(r.host, (refAgg.get(r.host) ?? 0) + r.views);
+
   const last30 = new Date(now - 30 * DAY);
   const topicCounts = TOPICS.map((t) => ({
     slug: t.slug,
@@ -101,5 +123,17 @@ export async function getMetrics(weekCount = 12): Promise<Metrics> {
     outingCaught,
     topics: topicCounts,
     totals: { members: totals[0], posts: totals[1], comments: totals[2] },
+    views: {
+      days: viewDays,
+      total: [...pageAgg.values()].reduce((a, b) => a + b, 0),
+      pages: [...pageAgg.entries()]
+        .map(([path, views]) => ({ path, label: PATH_LABELS[path] ?? path, views }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 8),
+      refs: [...refAgg.entries()]
+        .map(([host, views]) => ({ host, views }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 8),
+    },
   };
 }

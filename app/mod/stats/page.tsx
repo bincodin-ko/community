@@ -69,6 +69,47 @@ export default async function StatsPage() {
 
       <TopicBars data={m.topics} />
 
+      <section className="space-y-3">
+        <h3 className="serif text-lg font-bold">최근 {m.views.days}일 조회</h3>
+        <p className="text-sm text-mute">
+          우리 서버가 직접 센 숫자예요. 쿠키도 방문자 식별자도 없어서{" "}
+          <strong className="font-medium text-ink">순 방문자는 셀 수 없고 세지 않아요.</strong> 정확한 값이 아니라
+          방향을 보는 숫자예요.
+        </p>
+        {m.views.total === 0 ? (
+          <p className="text-sm text-mute">아직 집계된 조회가 없어요.</p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="mb-1.5 text-sm text-mute">화면별 ({m.views.total}회)</p>
+              <ul className="space-y-1 text-sm">
+                {m.views.pages.map((p) => (
+                  <li key={p.path} className="flex justify-between gap-3">
+                    <span className="truncate">{p.label}</span>
+                    <span className="shrink-0 text-mute tabular-nums">{p.views}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm text-mute">유입 출처</p>
+              {m.views.refs.length === 0 ? (
+                <p className="text-sm text-mute">직접 접속만 있었어요.</p>
+              ) : (
+                <ul className="space-y-1 text-sm">
+                  {m.views.refs.map((r) => (
+                    <li key={r.host} className="flex justify-between gap-3">
+                      <span className="truncate">{r.host}</span>
+                      <span className="shrink-0 text-mute tabular-nums">{r.views}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
       <section className="space-y-1 border-t border-line pt-6 text-sm text-mute">
         <p>
           활동 중인 계정 {m.totals.members}명 · 공개된 글 {m.totals.posts}개 · 댓글 {m.totals.comments}개 · 가려진 글{" "}

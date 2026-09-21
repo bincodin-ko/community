@@ -88,13 +88,15 @@ Jev 단독으로는 안 된다. Jev는 **판정기**이고, 찾기(탐색)·고�
 | `public-browser`, KofanLabs `jev-browser-chrome` | Claude Code/Cursor가 내 크롬 프로필을 조작 | 토큰 30%↓, 비용 25%↓ |
 | Stagehand + Jev | 접근성 트리를 state로 | 1과제 약 $0.001 |
 
-**이 레포에서 실제로 돌린 결과 (2026-09-21)**: `npm run browse -- "가족 주제의 이야기 목록을 연다"` 로 네 개 목표를 시험했고
-모두 2회의 Jev 호출, 약 1.3초 만에 정확한 페이지(`/t/family`, `/guide`, `/mindset`, `/t/military`)에 도달했다.
+**이 레포에서 돌린 결과 (2026-09-21) — 중요: 실제 Jev 가 아니라 가짜 서버(`scripts/qa/fake-jev.mjs`)로 돌렸다.**
+`TYPESAFE_API_KEY=test TYPESAFE_BASE_URL=http://127.0.0.1:4141` 로 로컬 스텁에 붙였고, api.typesafe.ai 에는 한 번도 요청하지 않았다.
+확인한 것은 **연결 구조와 루프**(DOM 추출 → 판정 → 클릭 → 목표·막힘 확인)이지 판정 품질이 아니다.
+네 개 목표를 시험해 모두 2회의 판정 호출, 약 1.3초 만에 정확한 페이지(`/t/family`, `/guide`, `/mindset`, `/t/military`)에 도달했다.
 이 과정에서 **우리 앱의 실제 결함 두 개**를 찾았다. (1) 주제 탭의 `title` 속성이 접근성 이름을 가로채, 보조기술과 에이전트가
 "마음" 대신 "수치심, 자기수용, 불안, 외로움"으로 읽고 있었다. (2) 주제 필터가 `/?topic=` 이라 화면 제목이 항상 "온다"였다.
 둘 다 고쳐서 이제 주제 탭은 제목이 있는 `/t/<주제>` 아카이브로 간다. 판정기를 붙이면 UI 결함이 드러난다는 것이 이 도구의 값이다.
 
-**실행 전제 (이 레포에서 확인한 것)**: `.mcp.json` 에 `jev-browser` 를 등록해 두었지만 실제로 돌리려면 두 가지가 필요하다.
+**실제 Jev 로 돌리려면 무엇이 필요한가**: `.mcp.json` 에 `jev-browser` 를 등록해 두었지만 실제로 돌리려면 두 가지가 필요하다.
 (1) `TYPESAFE_API_KEY` — 없으면 `jev_provider: null` 로 바로 실패한다. (2) 그 패키지가 기대하는 버전의 Playwright Chromium —
 `npx playwright install chromium` 을 MCP 서버가 쓰는 환경에서 한 번 실행해야 한다. 기존에 다른 버전이 깔려 있으면
 `Executable doesn't exist at .../chromium_headless_shell-XXXX` 로 실패한다. 이미 다른 빌드가 있다면
